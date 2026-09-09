@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel PRR — Acompanhamento de Projetos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #EEF1F5;
+    --ink: #0F2540;
+    --ink-soft: #52627A;
+    --gold: #B8934A;
+    --gold-soft: #F3E9D4;
+    --card: #FFFFFF;
+    --line: #DCE1E9;
+    --ok: #3E7457;
+    --ok-bg: #E4EEE7;
+    --warn: #B8862E;
+    --warn-bg: #F5EBD6;
+    --danger: #A23E2D;
+    --danger-bg: #F3E1DD;
+    --neutral: #5B6779;
+    --neutral-bg: #E7E9EE;
+    --info: #2C5F8A;
+    --info-bg: #E1EAF1;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  .wrap{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+  }
+
+  header{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 34px;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .lede{
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin: 0;
+    max-width: 46ch;
+  }
+
+  .status-bar{
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 10px 16px;
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .status-bar button{
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+
+  .status-bar button:hover{ background: var(--gold); }
+
+  .status-dot{
+    display:inline-block;
+    width: 7px; height:7px;
+    border-radius: 50%;
+    background: var(--line);
+  }
+  .status-dot.ok{ background: var(--ok); }
+  .status-dot.err{ background: var(--danger); }
+
+  /* Summary */
+  .summary{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .summary .tile{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    padding: 18px 20px;
+  }
+
+  .summary .tile .num{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 500;
+  }
+
+  .summary .tile .label{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* Filters */
+  .filters{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .chip{
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    padding: 7px 14px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .chip.active{
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  .add-project-btn{
+    margin-left: auto;
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .add-project-btn:hover{ background: var(--ink); }
+  .add-project-btn:disabled{ background: var(--line); cursor: not-allowed; }
+
+  /* Cards grid */
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .card{
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card-top{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .card-top h3{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 18px;
+    margin: 0 0 3px;
+  }
+
+  .card-top .entity{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .badge{
+    font-size: 11px;
+    padding: 4px 10px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .badge.candidatura{ background: var(--warn-bg); color: var(--warn); }
+  .badge.aprovado{ background: var(--info-bg); color: var(--info); }
+  .badge.execucao{ background: var(--ok-bg); color: var(--ok); }
+  .badge.concluido{ background: var(--neutral-bg); color: var(--neutral); }
+  .badge.suspenso{ background: var(--danger-bg); color: var(--danger); }
+
+  .metric{ }
+
+  .metric-head{
+    display:flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+
+  .metric-head .val{
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+  }
+
+  .bar{
+    height: 6px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+  }
+
+  .bar-fill{
+    height: 100%;
+    background: var(--gold);
+  }
+  .bar-fill.financeiro{ background: var(--info); }
+  .bar-fill.funcional{ background: var(--ok); }
+
+  .row-info{
+    display:flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .row-info .prazo-val{
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+  }
+
+  .desafios{
+    font-size: 13px;
+    background: var(--bg);
+    padding: 10px 12px;
+    border-left: 3px solid var(--gold);
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+  .desafios.empty{ font-style: italic; opacity: .6; }
+
+  .card-actions{
+    display:flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .card-actions button{
+    background: none;
+    border: none;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .card-actions button:hover{ color: var(--ink); }
+  .card-actions button.del:hover{ color: var(--danger); }
+
+  .empty-state{
+    grid-column: 1 / -1;
+    text-align:center;
+    padding: 60px 20px;
+    color: var(--ink-soft);
+  }
+
+  /* Modal */
+  .overlay{
+    position: fixed; inset: 0;
+    background: rgba(15,37,64,0.45);
+    display:none;
+    align-items:center; justify-content:center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .overlay.open{ display:flex; }
+
+  .modal{
+    background: var(--card);
+    max-width: 560px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 28px 30px;
+    border-top: 4px solid var(--gold);
+  }
+
+  .modal h2{
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+
+  .form-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .form-grid .full{ grid-column: 1/-1; }
+
+  .form-grid label, .config-panel label{
+    display:block;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+
+  .form-grid input, .form-grid select, .form-grid textarea, .config-panel input{
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .form-grid textarea{ font-family: 'Inter', sans-serif; resize: vertical; min-height: 60px; }
+
+  .modal-actions{
+    display:flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 18px;
+  }
+
+  .modal-actions button{
+    padding: 9px 18px;
+    font-size: 13px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+  }
+  .modal-actions button.secondary{
+    background: none;
+    color: var(--ink);
+  }
+
+  /* Config panel (GitHub connection) reused pattern */
+  .config-panel{
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .config-panel.open{ display: block; }
+  .config-panel h2{
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    margin: 0 0 4px;
+  }
+  .config-panel p.hint{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+  }
+  .config-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .config-grid .full{ grid-column: 1/-1; }
+  .config-panel .row-actions{ display:flex; gap: 10px; }
+  .config-panel .row-actions button{
+    padding: 9px 18px; font-size: 13px;
+    border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor:pointer;
+  }
+  .config-panel .row-actions button.secondary{ background:none; color: var(--ink); }
+
+  @media (max-width: 640px){
+    .summary{ grid-template-columns: 1fr 1fr; }
+    .form-grid, .config-grid{ grid-template-columns: 1fr; }
+    .grid{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Painel PRR</h1>
+      <p class="lede">Acompanhamento de estado, execução financeira, execução funcional, prazos e desafios dos projetos.</p>
+    </div>
+    <div class="status-bar">
+      <span><span class="status-dot" id="statusDot"></span><span id="statusText">Por ligar</span></span>
+      <button id="toggleConfig">Ligar ao GitHub</button>
+    </div>
+  </header>
+
+  <div class="config-panel" id="configPanel">
+    <h2>Ligação ao repositório</h2>
+    <p class="hint">Usa um repositório privado e um fine-grained personal access token com acesso apenas a esse repositório (permissão "Contents: Read and write"). O token fica só em memória nesta aba.</p>
+    <div class="config-grid">
+      <div>
+        <label for="owner">Utilizador ou organização</label>
+        <input id="owner" placeholder="ex: a-tua-conta">
+      </div>
+      <div>
+        <label for="repo">Repositório</label>
+        <input id="repo" placeholder="ex: painel-prr">
+      </div>
+      <div>
+        <label for="path">Caminho do ficheiro de dados</label>
+        <input id="path" placeholder="ex: projects.json" value="projects.json">
+      </div>
+      <div>
+        <label for="token">Personal Access Token</label>
+        <input id="token" type="password" placeholder="github_pat_...">
+      </div>
+    </div>
+    <div class="row-actions">
+      <button id="connectBtn">Ligar</button>
+      <button class="secondary" id="cancelConfig">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="summary" id="summary">
+    <div class="tile"><div class="num" id="sumTotal">0</div><div class="label">projetos</div></div>
+    <div class="tile"><div class="num" id="sumExecucao">0</div><div class="label">em execução</div></div>
+    <div class="tile"><div class="num" id="sumFinanceiro">0%</div><div class="label">execução financeira média</div></div>
+    <div class="tile"><div class="num" id="sumDesafios">0</div><div class="label">com desafios registados</div></div>
+  </div>
+
+  <div class="filters" id="filters">
+    <button class="chip active" data-filter="todos">Todos</button>
+    <button class="chip" data-filter="candidatura">Candidatura</button>
+    <button class="chip" data-filter="aprovado">Aprovado</button>
+    <button class="chip" data-filter="execucao">Em execução</button>
+    <button class="chip" data-filter="concluido">Concluído</button>
+    <button class="chip" data-filter="suspenso">Suspenso</button>
+    <button class="add-project-btn" id="addProjectBtn" disabled>+ Novo projeto</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">Novo projeto</h2>
+    <div class="form-grid">
+      <div class="full">
+        <label for="mName">Nome do projeto</label>
+        <input id="mName" placeholder="ex: Modernização da Rede X">
+      </div>
+      <div class="full">
+        <label for="mEntity">Entidade responsável</label>
+        <input id="mEntity" placeholder="ex: Município Y">
+      </div>
+      <div>
+        <label for="mStatus">Estado / fase</label>
+        <select id="mStatus">
+          <option value="candidatura">Candidatura</option>
+          <option value="aprovado">Aprovado</option>
+          <option value="execucao">Em execução</option>
+          <option value="concluido">Concluído</option>
+          <option value="suspenso">Suspenso</option>
+        </select>
+      </div>
+      <div>
+        <label for="mPrazoData">Próximo prazo/marco (data)</label>
+        <input id="mPrazoData" type="date">
+      </div>
+      <div class="full">
+        <label for="mPrazoDesc">Descrição do marco</label>
+        <input id="mPrazoDesc" placeholder="ex: Entrega do relatório trimestral">
+      </div>
+      <div>
+        <label for="mVerbaAtribuida">Verba atribuída (€)</label>
+        <input id="mVerbaAtribuida" type="number" min="0" step="0.01">
+      </div>
+      <div>
+        <label for="mVerbaExecutada">Verba executada (€)</label>
+        <input id="mVerbaExecutada" type="number" min="0" step="0.01">
+      </div>
+      <div class="full">
+        <label for="mFuncionalPct">Execução funcional (%)</label>
+        <input id="mFuncionalPct" type="number" min="0" max="100" step="1">
+      </div>
+      <div class="full">
+        <label for="mFuncionalDesc">Nota de execução funcional</label>
+        <input id="mFuncionalDesc" placeholder="ex: Obra concluída em 3 de 5 locais">
+      </div>
+      <div class="full">
+        <label for="mDesafios">Desafios / riscos</label>
+        <textarea id="mDesafios" placeholder="ex: Atraso no fornecedor de equipamento; pendente de parecer jurídico"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="saveProjectBtn">Guardar</button>
+      <button class="secondary" id="cancelModal">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const state = {
+    owner:'', repo:'', path:'projects.json', token:'',
+    connected:false, projects: [], sha:null, editingId: null, filter: 'todos'
+  };
+
+  const el = id => document.getElementById(id);
+  const $ = {
+    toggleConfig: el('toggleConfig'), configPanel: el('configPanel'),
+    connectBtn: el('connectBtn'), cancelConfig: el('cancelConfig'),
+    owner: el('owner'), repo: el('repo'), path: el('path'), token: el('token'),
+    statusDot: el('statusDot'), statusText: el('statusText'),
+    addProjectBtn: el('addProjectBtn'), grid: el('grid'), filters: el('filters'),
+    overlay: el('overlay'), modalTitle: el('modalTitle'),
+    mName: el('mName'), mEntity: el('mEntity'), mStatus: el('mStatus'),
+    mPrazoData: el('mPrazoData'), mPrazoDesc: el('mPrazoDesc'),
+    mVerbaAtribuida: el('mVerbaAtribuida'), mVerbaExecutada: el('mVerbaExecutada'),
+    mFuncionalPct: el('mFuncionalPct'), mFuncionalDesc: el('mFuncionalDesc'),
+    mDesafios: el('mDesafios'),
+    saveProjectBtn: el('saveProjectBtn'), cancelModal: el('cancelModal'),
+    sumTotal: el('sumTotal'), sumExecucao: el('sumExecucao'),
+    sumFinanceiro: el('sumFinanceiro'), sumDesafios: el('sumDesafios'),
+  };
+
+  const STATUS_LABEL = {
+    candidatura: 'Candidatura', aprovado: 'Aprovado', execucao: 'Em execução',
+    concluido: 'Concluído', suspenso: 'Suspenso'
+  };
+
+  function setStatus(kind, text){
+    $.statusDot.className = 'status-dot' + (kind ? ' ' + kind : '');
+    $.statusText.textContent = text;
+  }
+
+  $.toggleConfig.addEventListener('click', () => $.configPanel.classList.toggle('open'));
+  $.cancelConfig.addEventListener('click', () => $.configPanel.classList.remove('open'));
+
+  function apiUrl(){
+    return `https://api.github.com/repos/${state.owner}/${state.repo}/contents/${state.path}`;
+  }
+
+  $.connectBtn.addEventListener('click', async () => {
+    state.owner = $.owner.value.trim();
+    state.repo = $.repo.value.trim();
+    state.path = $.path.value.trim() || 'projects.json';
+    state.token = $.token.value.trim();
+
+    if(!state.owner || !state.repo || !state.token){
+      setStatus('err', 'Preenche utilizador, repositório e token.');
+      return;
+    }
+
+    setStatus('', 'A ligar...');
+    try{
+      const res = await fetch(apiUrl(), {
+        headers: { 'Authorization': `Bearer ${state.token}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if(res.status === 404){
+        state.projects = []; state.sha = null; state.connected = true;
+      } else if(res.ok){
+        const data = await res.json();
+        state.sha = data.sha;
+        const content = decodeURIComponent(escape(atob(data.content)));
+        const parsed = JSON.parse(content);
+        state.projects = parsed.projects || [];
+        state.connected = true;
+      } else {
+        const errBody = await res.json().catch(() => ({}));
+        setStatus('err', `Erro ${res.status}: ${errBody.message || 'não foi possível ligar.'}`);
+        return;
+      }
+      setStatus('ok', `${state.owner}/${state.repo} · ${state.path}`);
+      $.addProjectBtn.disabled = false;
+      $.configPanel.classList.remove('open');
+      $.toggleConfig.textContent = 'Reconfigurar';
+      render();
+    } catch(e){
+      setStatus('err', 'Falha de rede ao ligar ao GitHub.');
+    }
+  });
+
+  async function saveToGitHub(commitMessage){
+    const body = {
+      message: commitMessage,
+      content: btoa(unescape(encodeURIComponent(JSON.stringify({ projects: state.projects }, null, 2)))),
+    };
+    if(state.sha) body.sha = state.sha;
+    const res = await fetch(apiUrl(), {
+      method:'PUT',
+      headers: {
+        'Authorization': `Bearer ${state.token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok){
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.message || `Erro ${res.status}`);
+    }
+    const data = await res.json();
+    state.sha = data.content.sha;
+  }
+
+  // --- Modal handling ---
+  function openModal(project){
+    state.editingId = project ? project.id : null;
+    $.modalTitle.textContent = project ? 'Editar projeto' : 'Novo projeto';
+    $.mName.value = project?.name || '';
+    $.mEntity.value = project?.entity || '';
+    $.mStatus.value = project?.status || 'candidatura';
+    $.mPrazoData.value = project?.prazo?.data || '';
+    $.mPrazoDesc.value = project?.prazo?.marco || '';
+    $.mVerbaAtribuida.value = project?.financeiro?.atribuido ?? '';
+    $.mVerbaExecutada.value = project?.financeiro?.executado ?? '';
+    $.mFuncionalPct.value = project?.funcional?.percentual ?? '';
+    $.mFuncionalDesc.value = project?.funcional?.descricao || '';
+    $.mDesafios.value = project?.desafios || '';
+    $.overlay.classList.add('open');
+  }
+  function closeModal(){ $.overlay.classList.remove('open'); }
+
+  $.addProjectBtn.addEventListener('click', () => openModal(null));
+  $.cancelModal.addEventListener('click', closeModal);
+  $.overlay.addEventListener('click', (e) => { if(e.target === $.overlay) closeModal(); });
+
+  $.saveProjectBtn.addEventListener('click', async () => {
+    const name = $.mName.value.trim();
+    if(!name){ setStatus('err', 'O nome do projeto é obrigatório.'); return; }
+
+    const record = {
+      id: state.editingId || Date.now().toString(36),
+      name,
+      entity: $.mEntity.value.trim(),
+      status: $.mStatus.value,
+      prazo: { data: $.mPrazoData.value, marco: $.mPrazoDesc.value.trim() },
+      financeiro: {
+        atribuido: parseFloat($.mVerbaAtribuida.value) || 0,
+        executado: parseFloat($.mVerbaExecutada.value) || 0
+      },
+      funcional: {
+        percentual: Math.min(100, Math.max(0, parseFloat($.mFuncionalPct.value) || 0)),
+        descricao: $.mFuncionalDesc.value.trim()
+      },
+      desafios: $.mDesafios.value.trim(),
+      updatedAt: new Date().toISOString()
+    };
+
+    const idx = state.projects.findIndex(p => p.id === record.id);
+    const backup = state.projects.slice();
+    if(idx >= 0) state.projects[idx] = record; else state.projects.unshift(record);
+
+    closeModal();
+    render();
+    setStatus('', 'A gravar no GitHub...');
+    try{
+      await saveToGitHub(`${idx >= 0 ? 'Atualiza' : 'Adiciona'} projeto: ${name}`);
+      setStatus('ok', `${state.owner}/${state.repo} · ${state.path}`);
+    } catch(e){
+      setStatus('err', 'Erro ao gravar: ' + e.message);
+      state.projects = backup;
+      render();
+    }
+  });
+
+  async function deleteProject(id){
+    const idx = state.projects.findIndex(p => p.id === id);
+    if(idx === -1) return;
+    if(!confirm('Remover este projeto? Esta ação fica registada no histórico do repositório.')) return;
+    const removed = state.projects.splice(idx, 1)[0];
+    render();
+    try{
+      await saveToGitHub(`Remove projeto: ${removed.name}`);
+    } catch(e){
+      setStatus('err', 'Erro ao remover: ' + e.message);
+      state.projects.splice(idx, 0, removed);
+      render();
+    }
+  }
+
+  // --- Filters ---
+  $.filters.addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if(!btn) return;
+    state.filter = btn.dataset.filter;
+    $.filters.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+
+  // --- Rendering ---
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function renderSummary(list){
+    $.sumTotal.textContent = list.length;
+    $.sumExecucao.textContent = list.filter(p => p.status === 'execucao').length;
+    const withBudget = list.filter(p => p.financeiro.atribuido > 0);
+    const avgFin = withBudget.length
+      ? withBudget.reduce((s,p) => s + (p.financeiro.executado / p.financeiro.atribuido) * 100, 0) / withBudget.length
+      : 0;
+    $.sumFinanceiro.textContent = avgFin.toFixed(0) + '%';
+    $.sumDesafios.textContent = list.filter(p => p.desafios && p.desafios.trim()).length;
+  }
+
+  function cardHtml(p){
+    const finPct = p.financeiro.atribuido > 0
+      ? Math.min(100, (p.financeiro.executado / p.financeiro.atribuido) * 100)
+      : 0;
+    const funPct = p.funcional.percentual || 0;
+
+    return `
+      <div class="card" data-id="${p.id}">
+        <div class="card-top">
+          <div>
+            <h3>${escapeHtml(p.name)}</h3>
+            <div class="entity">${escapeHtml(p.entity)}</div>
+          </div>
+          <span class="badge ${p.status}">${STATUS_LABEL[p.status]}</span>
+        </div>
+
+        <div class="metric">
+          <div class="metric-head"><span>Execução financeira</span><span class="val">${finPct.toFixed(0)}% · €${Number(p.financeiro.executado).toLocaleString('pt-PT')} / €${Number(p.financeiro.atribuido).toLocaleString('pt-PT')}</span></div>
+          <div class="bar"><div class="bar-fill financeiro" style="width:${finPct}%"></div></div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-head"><span>Execução funcional</span><span class="val">${funPct}%</span></div>
+          <div class="bar"><div class="bar-fill funcional" style="width:${funPct}%"></div></div>
+          ${p.funcional.descricao ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">${escapeHtml(p.funcional.descricao)}</div>` : ''}
+        </div>
+
+        <div class="row-info">
+          <span>Próximo marco</span>
+          <span class="prazo-val">${p.prazo.data ? p.prazo.data : '—'}${p.prazo.marco ? ' · ' + escapeHtml(p.prazo.marco) : ''}</span>
+        </div>
+
+        <div class="desafios ${p.desafios ? '' : 'empty'}">${p.desafios ? escapeHtml(p.desafios) : 'Sem desafios registados.'}</div>
+
+        <div class="card-actions">
+          <button class="edit" data-id="${p.id}">editar</button>
+          <button class="del" data-id="${p.id}">remover</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function render(){
+    const list = state.projects.filter(p => state.filter === 'todos' || p.status === state.filter);
+    renderSummary(state.projects);
+
+    if(list.length === 0){
+      $.grid.innerHTML = `<div class="empty-state">
+        <p>${state.connected ? 'Sem projetos nesta vista.' : 'Liga ao GitHub para carregar ou criar projetos.'}</p>
+      </div>`;
+      return;
+    }
+
+    $.grid.innerHTML = list
+      .sort((a,b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+      .map(cardHtml).join('');
+
+    $.grid.querySelectorAll('.edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = state.projects.find(x => x.id === btn.dataset.id);
+        if(p) openModal(p);
+      });
+    });
+    $.grid.querySelectorAll('.del').forEach(btn => {
+      btn.addEventListener('click', () => deleteProject(btn.dataset.id));
+    });
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>

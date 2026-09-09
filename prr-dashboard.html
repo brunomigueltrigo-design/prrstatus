@@ -5,26 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel PRR — Acompanhamento de Projetos</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
   :root{
-    --bg: #EEF1F5;
-    --ink: #0F2540;
-    --ink-soft: #52627A;
-    --gold: #B8934A;
-    --gold-soft: #F3E9D4;
+    --bg: #F4F6FA;
+    --ink: #16213A;
+    --ink-soft: #6B7690;
     --card: #FFFFFF;
-    --line: #DCE1E9;
-    --ok: #3E7457;
-    --ok-bg: #E4EEE7;
-    --warn: #B8862E;
-    --warn-bg: #F5EBD6;
-    --danger: #A23E2D;
-    --danger-bg: #F3E1DD;
-    --neutral: #5B6779;
-    --neutral-bg: #E7E9EE;
-    --info: #2C5F8A;
-    --info-bg: #E1EAF1;
+    --line: #E4E8F0;
+
+    --normal: #1E8A5F;
+    --normal-bg: #E4F3EC;
+    --normal-bar: #1E8A5F;
+
+    --atencao: #D98A1E;
+    --atencao-bg: #FCF0DD;
+    --atencao-bar: #E5A63C;
+
+    --risco: #C6432E;
+    --risco-bg: #FBE6E2;
+    --risco-bar: #C6432E;
   }
 
   *{ box-sizing: border-box; }
@@ -33,7 +33,7 @@
     margin:0;
     background: var(--bg);
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Manrope', sans-serif;
     min-height: 100vh;
   }
 
@@ -53,11 +53,10 @@
   }
 
   h1{
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 34px;
+    font-weight: 800;
+    font-size: 32px;
     margin: 0 0 6px;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 
   .lede{
@@ -65,30 +64,34 @@
     font-size: 14px;
     margin: 0;
     max-width: 46ch;
+    font-weight: 500;
   }
 
   .status-bar{
     background: var(--card);
     border: 1px solid var(--line);
+    border-radius: 10px;
     padding: 10px 16px;
     display:flex;
     align-items:center;
     gap: 12px;
     font-size: 13px;
     color: var(--ink-soft);
+    font-weight: 500;
   }
 
   .status-bar button{
     background: var(--ink);
     color: #fff;
     border: none;
-    font-family: 'Inter', sans-serif;
+    border-radius: 7px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
     font-size: 12px;
     padding: 7px 14px;
     cursor: pointer;
   }
-
-  .status-bar button:hover{ background: var(--gold); }
+  .status-bar button:hover{ opacity: .85; }
 
   .status-dot{
     display:inline-block;
@@ -96,8 +99,8 @@
     border-radius: 50%;
     background: var(--line);
   }
-  .status-dot.ok{ background: var(--ok); }
-  .status-dot.err{ background: var(--danger); }
+  .status-dot.ok{ background: var(--normal); }
+  .status-dot.err{ background: var(--risco); }
 
   /* Summary */
   .summary{
@@ -110,7 +113,7 @@
   .summary .tile{
     background: var(--card);
     border: 1px solid var(--line);
-    border-top: 3px solid var(--gold);
+    border-radius: 12px;
     padding: 18px 20px;
   }
 
@@ -124,6 +127,7 @@
     font-size: 12px;
     color: var(--ink-soft);
     margin-top: 4px;
+    font-weight: 600;
   }
 
   /* Filters */
@@ -131,7 +135,8 @@
     display:flex;
     gap: 8px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 28px;
+    align-items:center;
   }
 
   .chip{
@@ -139,9 +144,11 @@
     background: var(--card);
     color: var(--ink-soft);
     font-size: 12.5px;
+    font-weight: 700;
     padding: 7px 14px;
+    border-radius: 20px;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Manrope', sans-serif;
   }
 
   .chip.active{
@@ -152,144 +159,204 @@
 
   .add-project-btn{
     margin-left: auto;
-    background: var(--gold);
+    background: var(--ink);
     color: #fff;
     border: none;
+    border-radius: 20px;
     padding: 9px 18px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
   }
-  .add-project-btn:hover{ background: var(--ink); }
+  .add-project-btn:hover{ opacity: .85; }
   .add-project-btn:disabled{ background: var(--line); cursor: not-allowed; }
 
-  /* Cards grid */
+  /* Category groups */
+  .category-group{ margin-bottom: 36px; }
+
+  .category-title{
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+    padding-left: 2px;
+  }
+
   .grid{
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 18px;
   }
 
   .card{
     background: var(--card);
-    border: 1px solid var(--line);
-    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(22,33,58,0.04), 0 8px 24px -16px rgba(22,33,58,0.15);
     display: flex;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  .card-bar{
+    width: 6px;
+    flex-shrink: 0;
+  }
+  .card-bar.normal{ background: var(--normal); }
+  .card-bar.atencao{ background: var(--atencao); }
+  .card-bar.risco{ background: var(--risco); }
+
+  .card-left{
+    flex: 1;
+    min-width: 0;
+    padding: 18px 18px 18px 16px;
+    display:flex;
     flex-direction: column;
+    justify-content: space-between;
     gap: 14px;
   }
 
-  .card-top{
+  .card-left-top{
     display:flex;
-    justify-content: space-between;
-    align-items: flex-start;
     gap: 10px;
+    align-items:flex-start;
   }
 
-  .card-top h3{
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 18px;
-    margin: 0 0 3px;
+  .dot{
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .dot.normal{ background: var(--normal); }
+  .dot.atencao{ background: var(--atencao); }
+  .dot.risco{ background: var(--risco); }
+
+  .card-left h3{
+    font-size: 15.5px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.35;
   }
 
-  .card-top .entity{
-    font-size: 12.5px;
-    color: var(--ink-soft);
-  }
-
-  .badge{
-    font-size: 11px;
-    padding: 4px 10px;
-    white-space: nowrap;
-    font-weight: 500;
-  }
-  .badge.candidatura{ background: var(--warn-bg); color: var(--warn); }
-  .badge.aprovado{ background: var(--info-bg); color: var(--info); }
-  .badge.execucao{ background: var(--ok-bg); color: var(--ok); }
-  .badge.concluido{ background: var(--neutral-bg); color: var(--neutral); }
-  .badge.suspenso{ background: var(--danger-bg); color: var(--danger); }
-
-  .metric{ }
-
-  .metric-head{
-    display:flex;
-    justify-content: space-between;
+  .card-left .entity{
     font-size: 12px;
     color: var(--ink-soft);
-    margin-bottom: 4px;
+    font-weight: 600;
+    margin-top: 2px;
   }
 
-  .metric-head .val{
-    font-family: 'IBM Plex Mono', monospace;
-    color: var(--ink);
+  .pct-row{
+    display:flex;
+    justify-content: flex-end;
   }
+  .pct-row .pct{
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    font-size: 20px;
+  }
+  .pct.normal{ color: var(--normal); }
+  .pct.atencao{ color: var(--atencao); }
+  .pct.risco{ color: var(--risco); }
 
   .bar{
-    height: 6px;
+    height: 7px;
     background: var(--bg);
-    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
   }
+  .bar-fill{ height: 100%; border-radius: 4px; }
+  .bar-fill.normal{ background: var(--normal-bar); }
+  .bar-fill.atencao{ background: var(--atencao-bar); }
+  .bar-fill.risco{ background: var(--risco-bar); }
 
-  .bar-fill{
-    height: 100%;
-    background: var(--gold);
-  }
-  .bar-fill.financeiro{ background: var(--info); }
-  .bar-fill.funcional{ background: var(--ok); }
-
-  .row-info{
-    display:flex;
-    justify-content: space-between;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    padding-top: 10px;
-    border-top: 1px solid var(--line);
-  }
-
-  .row-info .prazo-val{
+  .budget{
     font-family: 'IBM Plex Mono', monospace;
-    color: var(--ink);
+    font-weight: 500;
+    font-size: 16px;
   }
-
-  .desafios{
-    font-size: 13px;
-    background: var(--bg);
-    padding: 10px 12px;
-    border-left: 3px solid var(--gold);
-    color: var(--ink-soft);
-    line-height: 1.45;
-  }
-  .desafios.empty{ font-style: italic; opacity: .6; }
 
   .card-actions{
     display:flex;
-    gap: 10px;
-    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 2px;
   }
-
   .card-actions button{
     background: none;
     border: none;
-    font-size: 12.5px;
+    font-size: 11.5px;
+    font-weight: 700;
     color: var(--ink-soft);
     text-decoration: underline;
     cursor: pointer;
+    padding: 0;
   }
   .card-actions button:hover{ color: var(--ink); }
-  .card-actions button.del:hover{ color: var(--danger); }
+  .card-actions button.del:hover{ color: var(--risco); }
+
+  .card-right{
+    width: 42%;
+    flex-shrink: 0;
+    margin: 12px 14px 12px 0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display:flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  .card-right.normal{ background: var(--normal-bg); }
+  .card-right.atencao{ background: var(--atencao-bg); }
+  .card-right.risco{ background: var(--risco-bg); }
+
+  .card-right .label{
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .card-right.normal .label{ color: var(--normal); }
+  .card-right.atencao .label{ color: var(--atencao); }
+  .card-right.risco .label{ color: var(--risco); }
+
+  .card-right .situacao{
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .card-right .situacao.empty{
+    font-weight: 500;
+    font-style: italic;
+    opacity: .6;
+  }
+
+  .card-right .prazo{
+    margin-top: auto;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    padding-top: 8px;
+    border-top: 1px solid rgba(22,33,58,0.08);
+  }
+  .card-right .prazo .val{
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+  }
 
   .empty-state{
     grid-column: 1 / -1;
     text-align:center;
     padding: 60px 20px;
     color: var(--ink-soft);
+    font-weight: 500;
   }
 
   /* Modal */
   .overlay{
     position: fixed; inset: 0;
-    background: rgba(15,37,64,0.45);
+    background: rgba(22,33,58,0.45);
     display:none;
     align-items:center; justify-content:center;
     padding: 20px;
@@ -299,17 +366,17 @@
 
   .modal{
     background: var(--card);
-    max-width: 560px;
+    max-width: 580px;
     width: 100%;
     max-height: 88vh;
     overflow-y: auto;
     padding: 28px 30px;
-    border-top: 4px solid var(--gold);
+    border-radius: 16px;
   }
 
   .modal h2{
-    font-family: 'Fraunces', serif;
-    font-size: 20px;
+    font-size: 19px;
+    font-weight: 800;
     margin: 0 0 18px;
   }
 
@@ -324,6 +391,7 @@
   .form-grid label, .config-panel label{
     display:block;
     font-size: 12px;
+    font-weight: 700;
     color: var(--ink-soft);
     margin-bottom: 5px;
   }
@@ -332,12 +400,13 @@
     width: 100%;
     padding: 9px 10px;
     border: 1px solid var(--line);
+    border-radius: 8px;
     background: var(--bg);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Manrope', sans-serif;
     font-size: 13px;
     color: var(--ink);
   }
-  .form-grid textarea{ font-family: 'Inter', sans-serif; resize: vertical; min-height: 60px; }
+  .form-grid textarea{ font-family: 'Manrope', sans-serif; resize: vertical; min-height: 60px; }
 
   .modal-actions{
     display:flex;
@@ -348,7 +417,9 @@
 
   .modal-actions button{
     padding: 9px 18px;
+    border-radius: 8px;
     font-size: 13px;
+    font-weight: 700;
     border: 1px solid var(--ink);
     background: var(--ink);
     color: #fff;
@@ -359,24 +430,26 @@
     color: var(--ink);
   }
 
-  /* Config panel (GitHub connection) reused pattern */
+  /* Config panel (GitHub connection) */
   .config-panel{
     background: var(--card);
     border: 1px solid var(--line);
+    border-radius: 12px;
     padding: 22px 24px;
     margin-bottom: 24px;
     display: none;
   }
   .config-panel.open{ display: block; }
   .config-panel h2{
-    font-family: 'Fraunces', serif;
-    font-size: 18px;
+    font-size: 17px;
+    font-weight: 800;
     margin: 0 0 4px;
   }
   .config-panel p.hint{
     font-size: 13px;
     color: var(--ink-soft);
     margin: 0 0 16px;
+    font-weight: 500;
   }
   .config-grid{
     display: grid;
@@ -387,7 +460,7 @@
   .config-grid .full{ grid-column: 1/-1; }
   .config-panel .row-actions{ display:flex; gap: 10px; }
   .config-panel .row-actions button{
-    padding: 9px 18px; font-size: 13px;
+    padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700;
     border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor:pointer;
   }
   .config-panel .row-actions button.secondary{ background:none; color: var(--ink); }
@@ -396,6 +469,9 @@
     .summary{ grid-template-columns: 1fr 1fr; }
     .form-grid, .config-grid{ grid-template-columns: 1fr; }
     .grid{ grid-template-columns: 1fr; }
+    .card{ flex-direction: column; }
+    .card-bar{ width: 100%; height: 6px; }
+    .card-right{ width: auto; margin: 0 14px 14px; }
   }
 </style>
 </head>
@@ -423,7 +499,7 @@
       </div>
       <div>
         <label for="repo">Repositório</label>
-        <input id="repo" placeholder="ex: painel-prr">
+        <input id="repo" placeholder="ex: prrstatus">
       </div>
       <div>
         <label for="path">Caminho do ficheiro de dados</label>
@@ -457,7 +533,7 @@
     <button class="add-project-btn" id="addProjectBtn" disabled>+ Novo projeto</button>
   </div>
 
-  <div class="grid" id="grid"></div>
+  <div id="groupsContainer"></div>
 </div>
 
 <div class="overlay" id="overlay">
@@ -466,9 +542,13 @@
     <div class="form-grid">
       <div class="full">
         <label for="mName">Nome do projeto</label>
-        <input id="mName" placeholder="ex: Modernização da Rede X">
+        <input id="mName" placeholder="ex: Aq. de Equipamento Informático Medical Grade">
       </div>
-      <div class="full">
+      <div>
+        <label for="mCategoria">Categoria</label>
+        <input id="mCategoria" placeholder="ex: Equipamento">
+      </div>
+      <div>
         <label for="mEntity">Entidade responsável</label>
         <input id="mEntity" placeholder="ex: Município Y">
       </div>
@@ -483,10 +563,18 @@
         </select>
       </div>
       <div>
+        <label for="mSaude">Situação (cor do cartão)</label>
+        <select id="mSaude">
+          <option value="normal">A decorrer bem (verde)</option>
+          <option value="atencao">Atenção / a aguardar (laranja)</option>
+          <option value="risco">Risco / atrasado (vermelho)</option>
+        </select>
+      </div>
+      <div>
         <label for="mPrazoData">Próximo prazo/marco (data)</label>
         <input id="mPrazoData" type="date">
       </div>
-      <div class="full">
+      <div>
         <label for="mPrazoDesc">Descrição do marco</label>
         <input id="mPrazoDesc" placeholder="ex: Entrega do relatório trimestral">
       </div>
@@ -503,12 +591,8 @@
         <input id="mFuncionalPct" type="number" min="0" max="100" step="1">
       </div>
       <div class="full">
-        <label for="mFuncionalDesc">Nota de execução funcional</label>
-        <input id="mFuncionalDesc" placeholder="ex: Obra concluída em 3 de 5 locais">
-      </div>
-      <div class="full">
-        <label for="mDesafios">Desafios / riscos</label>
-        <textarea id="mDesafios" placeholder="ex: Atraso no fornecedor de equipamento; pendente de parecer jurídico"></textarea>
+        <label for="mDesafios">Situação atual / desafios (texto da caixa "Informação")</label>
+        <textarea id="mDesafios" placeholder="ex: Aguarda visto do TdC"></textarea>
       </div>
     </div>
     <div class="modal-actions">
@@ -531,13 +615,13 @@
     connectBtn: el('connectBtn'), cancelConfig: el('cancelConfig'),
     owner: el('owner'), repo: el('repo'), path: el('path'), token: el('token'),
     statusDot: el('statusDot'), statusText: el('statusText'),
-    addProjectBtn: el('addProjectBtn'), grid: el('grid'), filters: el('filters'),
+    addProjectBtn: el('addProjectBtn'), groupsContainer: el('groupsContainer'), filters: el('filters'),
     overlay: el('overlay'), modalTitle: el('modalTitle'),
-    mName: el('mName'), mEntity: el('mEntity'), mStatus: el('mStatus'),
+    mName: el('mName'), mCategoria: el('mCategoria'), mEntity: el('mEntity'), mStatus: el('mStatus'),
+    mSaude: el('mSaude'),
     mPrazoData: el('mPrazoData'), mPrazoDesc: el('mPrazoDesc'),
     mVerbaAtribuida: el('mVerbaAtribuida'), mVerbaExecutada: el('mVerbaExecutada'),
-    mFuncionalPct: el('mFuncionalPct'), mFuncionalDesc: el('mFuncionalDesc'),
-    mDesafios: el('mDesafios'),
+    mFuncionalPct: el('mFuncionalPct'), mDesafios: el('mDesafios'),
     saveProjectBtn: el('saveProjectBtn'), cancelModal: el('cancelModal'),
     sumTotal: el('sumTotal'), sumExecucao: el('sumExecucao'),
     sumFinanceiro: el('sumFinanceiro'), sumDesafios: el('sumDesafios'),
@@ -628,14 +712,15 @@
     state.editingId = project ? project.id : null;
     $.modalTitle.textContent = project ? 'Editar projeto' : 'Novo projeto';
     $.mName.value = project?.name || '';
+    $.mCategoria.value = project?.categoria || '';
     $.mEntity.value = project?.entity || '';
     $.mStatus.value = project?.status || 'candidatura';
+    $.mSaude.value = project?.saude || 'normal';
     $.mPrazoData.value = project?.prazo?.data || '';
     $.mPrazoDesc.value = project?.prazo?.marco || '';
     $.mVerbaAtribuida.value = project?.financeiro?.atribuido ?? '';
     $.mVerbaExecutada.value = project?.financeiro?.executado ?? '';
     $.mFuncionalPct.value = project?.funcional?.percentual ?? '';
-    $.mFuncionalDesc.value = project?.funcional?.descricao || '';
     $.mDesafios.value = project?.desafios || '';
     $.overlay.classList.add('open');
   }
@@ -652,16 +737,17 @@
     const record = {
       id: state.editingId || Date.now().toString(36),
       name,
+      categoria: $.mCategoria.value.trim() || 'Geral',
       entity: $.mEntity.value.trim(),
       status: $.mStatus.value,
+      saude: $.mSaude.value,
       prazo: { data: $.mPrazoData.value, marco: $.mPrazoDesc.value.trim() },
       financeiro: {
         atribuido: parseFloat($.mVerbaAtribuida.value) || 0,
         executado: parseFloat($.mVerbaExecutada.value) || 0
       },
       funcional: {
-        percentual: Math.min(100, Math.max(0, parseFloat($.mFuncionalPct.value) || 0)),
-        descricao: $.mFuncionalDesc.value.trim()
+        percentual: Math.min(100, Math.max(0, parseFloat($.mFuncionalPct.value) || 0))
       },
       desafios: $.mDesafios.value.trim(),
       updatedAt: new Date().toISOString()
@@ -728,42 +814,39 @@
   }
 
   function cardHtml(p){
-    const finPct = p.financeiro.atribuido > 0
-      ? Math.min(100, (p.financeiro.executado / p.financeiro.atribuido) * 100)
-      : 0;
-    const funPct = p.funcional.percentual || 0;
+    const saude = p.saude || 'normal';
+    const funPct = p.funcional?.percentual || 0;
+    const atribuido = p.financeiro?.atribuido || 0;
 
     return `
-      <div class="card" data-id="${p.id}">
-        <div class="card-top">
+      <div class="card">
+        <div class="card-bar ${saude}"></div>
+        <div class="card-left">
           <div>
-            <h3>${escapeHtml(p.name)}</h3>
-            <div class="entity">${escapeHtml(p.entity)}</div>
+            <div class="card-left-top">
+              <span class="dot ${saude}"></span>
+              <div>
+                <h3>${escapeHtml(p.name)}</h3>
+                ${p.entity ? `<div class="entity">${escapeHtml(p.entity)}</div>` : ''}
+              </div>
+            </div>
           </div>
-          <span class="badge ${p.status}">${STATUS_LABEL[p.status]}</span>
+          <div>
+            <div class="pct-row"><span class="pct ${saude}">${funPct}%</span></div>
+            <div class="bar"><div class="bar-fill ${saude}" style="width:${funPct}%"></div></div>
+          </div>
+          <div>
+            <div class="budget">${atribuido ? '€' + Number(atribuido).toLocaleString('pt-PT') : '—'}</div>
+            <div class="card-actions">
+              <button class="edit" data-id="${p.id}">editar</button>
+              <button class="del" data-id="${p.id}">remover</button>
+            </div>
+          </div>
         </div>
-
-        <div class="metric">
-          <div class="metric-head"><span>Execução financeira</span><span class="val">${finPct.toFixed(0)}% · €${Number(p.financeiro.executado).toLocaleString('pt-PT')} / €${Number(p.financeiro.atribuido).toLocaleString('pt-PT')}</span></div>
-          <div class="bar"><div class="bar-fill financeiro" style="width:${finPct}%"></div></div>
-        </div>
-
-        <div class="metric">
-          <div class="metric-head"><span>Execução funcional</span><span class="val">${funPct}%</span></div>
-          <div class="bar"><div class="bar-fill funcional" style="width:${funPct}%"></div></div>
-          ${p.funcional.descricao ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">${escapeHtml(p.funcional.descricao)}</div>` : ''}
-        </div>
-
-        <div class="row-info">
-          <span>Próximo marco</span>
-          <span class="prazo-val">${p.prazo.data ? p.prazo.data : '—'}${p.prazo.marco ? ' · ' + escapeHtml(p.prazo.marco) : ''}</span>
-        </div>
-
-        <div class="desafios ${p.desafios ? '' : 'empty'}">${p.desafios ? escapeHtml(p.desafios) : 'Sem desafios registados.'}</div>
-
-        <div class="card-actions">
-          <button class="edit" data-id="${p.id}">editar</button>
-          <button class="del" data-id="${p.id}">remover</button>
+        <div class="card-right ${saude}">
+          <div class="label">Informação</div>
+          <div class="situacao ${p.desafios ? '' : 'empty'}">${p.desafios ? escapeHtml(p.desafios) : 'Sem situação registada.'}</div>
+          ${p.prazo?.data || p.prazo?.marco ? `<div class="prazo">Próximo marco: <span class="val">${p.prazo.data || '—'}</span>${p.prazo.marco ? ' · ' + escapeHtml(p.prazo.marco) : ''}</div>` : ''}
         </div>
       </div>
     `;
@@ -774,23 +857,37 @@
     renderSummary(state.projects);
 
     if(list.length === 0){
-      $.grid.innerHTML = `<div class="empty-state">
-        <p>${state.connected ? 'Sem projetos nesta vista.' : 'Liga ao GitHub para carregar ou criar projetos.'}</p>
+      $.groupsContainer.innerHTML = `<div class="empty-state">
+        ${state.connected ? 'Sem projetos nesta vista.' : 'Liga ao GitHub para carregar ou criar projetos.'}
       </div>`;
       return;
     }
 
-    $.grid.innerHTML = list
-      .sort((a,b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
-      .map(cardHtml).join('');
+    const groups = {};
+    list.forEach(p => {
+      const cat = p.categoria || 'Geral';
+      if(!groups[cat]) groups[cat] = [];
+      groups[cat].push(p);
+    });
 
-    $.grid.querySelectorAll('.edit').forEach(btn => {
+    $.groupsContainer.innerHTML = Object.keys(groups).sort().map(cat => `
+      <div class="category-group">
+        <div class="category-title">${escapeHtml(cat)}</div>
+        <div class="grid">
+          ${groups[cat]
+            .sort((a,b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+            .map(cardHtml).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    $.groupsContainer.querySelectorAll('.edit').forEach(btn => {
       btn.addEventListener('click', () => {
         const p = state.projects.find(x => x.id === btn.dataset.id);
         if(p) openModal(p);
       });
     });
-    $.grid.querySelectorAll('.del').forEach(btn => {
+    $.groupsContainer.querySelectorAll('.del').forEach(btn => {
       btn.addEventListener('click', () => deleteProject(btn.dataset.id));
     });
   }

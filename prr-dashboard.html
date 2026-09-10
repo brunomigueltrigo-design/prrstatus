@@ -186,7 +186,6 @@
       <p class="lede">Acompanhamento de projetos — estado, execução, investimento, dependências e riscos.</p>
     </div>
     <div class="toolbar">
-      <button id="githubBtn">Ligar ao GitHub</button>
       <button id="importExcelBtn">Importar Excel</button>
       <input type="file" id="importExcelInput" accept=".xlsx,.xls" style="display:none">
       <button id="exportPptxBtn">Exportar PowerPoint</button>
@@ -241,23 +240,6 @@
     <div class="modal-actions">
       <button id="saveProjectBtn">Guardar</button>
       <button class="secondary" id="cancelModal">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="githubOverlay">
-  <div class="modal">
-    <h2>Ligar ao GitHub</h2>
-    <p style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 16px;line-height:1.5;">
-      Repositório: <code id="ghTarget"></code>. Os dados passam a ser guardados nesse ficheiro, com histórico de commits. É necessário um <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">token de acesso (fine-grained)</a> com permissão "Contents: Read and write" restrita a esse repositório. O token fica guardado apenas neste browser (localStorage) — nunca é enviado para mais lado nenhum além do GitHub, e nunca fica gravado no código da página.
-    </p>
-    <div class="form-grid">
-      <div class="full"><label for="ghToken">Token de acesso</label><input id="ghToken" type="password" placeholder="github_pat_..."></div>
-    </div>
-    <div class="modal-actions">
-      <button id="ghSaveBtn">Ligar</button>
-      <button class="secondary" id="ghDisconnectBtn">Desligar</button>
-      <button class="secondary" id="ghCancelBtn">Cancelar</button>
     </div>
   </div>
 </div>
@@ -421,9 +403,6 @@
     saveProjectBtn: el('saveProjectBtn'), cancelModal: el('cancelModal'),
     sumExecucao: el('sumExecucao'), sumConcluidos: el('sumConcluidos'), sumAtraso: el('sumAtraso'),
     sumTaxaProjeto: el('sumTaxaProjeto'), sumInvestimento: el('sumInvestimento'), sumTaxaFin: el('sumTaxaFin'),
-    githubBtn: el('githubBtn'), githubOverlay: el('githubOverlay'), ghTarget: el('ghTarget'),
-    ghToken: el('ghToken'),
-    ghSaveBtn: el('ghSaveBtn'), ghDisconnectBtn: el('ghDisconnectBtn'), ghCancelBtn: el('ghCancelBtn'),
     importExcelBtn: el('importExcelBtn'), importExcelInput: el('importExcelInput'),
   };
 
@@ -489,28 +468,16 @@
   });
 
   // --- Persistência via GitHub (ficheiro projects.json, com histórico de commits) ---
-  // Repositório de destino fixo no código (não é configurável a partir do browser).
-  // O token de acesso NUNCA fica aqui nem em mais nenhum ficheiro do repositório — é
-  // uma credencial e fica só no localStorage de quem se ligar, no seu próprio browser.
+  // Repositório de destino e token fixos no código: a página liga-se sozinha, sem
+  // nenhum passo manual. AVISO: como o GitHub Pages costuma ser publicamente
+  // acessível mesmo vindo de um repositório privado, este token fica visível a
+  // qualquer pessoa com o link da página (código-fonte) e tem de estar restrito,
+  // por token fine-grained, só a este repositório com permissão "Contents: Read
+  // and write" — nunca uses aqui um token com mais permissões do que isso.
   const GITHUB_CONFIG = { owner: 'brunomigueltrigo-design', repo: 'prrstatus', path: 'projects.json', branch: 'main' };
+  const GITHUB_TOKEN = 'COLOCAR_TOKEN_AQUI';
 
-  const GH_TOKEN_KEY = 'prrGithubToken';
-  const github = { ...GITHUB_CONFIG, token:'', sha:null, connected:false };
-
-  function loadGithubConfig(){
-    try{
-      const token = localStorage.getItem(GH_TOKEN_KEY);
-      if(!token) return;
-      Object.assign(github, { token, connected: true, sha: null });
-    } catch(e){ /* localStorage indisponível ou dados corrompidos */ }
-  }
-  function saveGithubConfig(){
-    try{ localStorage.setItem(GH_TOKEN_KEY, github.token); } catch(e){ /* localStorage indisponível (ex: modo privado) */ }
-  }
-  function clearGithubConfig(){
-    try{ localStorage.removeItem(GH_TOKEN_KEY); } catch(e){}
-    Object.assign(github, { token:'', sha:null, connected:false });
-  }
+  const github = { ...GITHUB_CONFIG, token: GITHUB_TOKEN, sha: null, connected: GITHUB_TOKEN !== 'COLOCAR_TOKEN_AQUI' };
 
   function b64EncodeUnicode(str){
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));
@@ -524,12 +491,11 @@
   function ghHeaders(){
     return { Authorization: 'Bearer ' + github.token, Accept: 'application/vnd.github+json' };
   }
-  function updateGithubBtn(){
-    $.githubBtn.textContent = github.connected ? `GitHub: ${github.owner}/${github.repo}` : 'Ligar ao GitHub';
-  }
-
   async function githubLoad(){
-    if(!github.connected) return false;
+    if(!github.connected){
+      setStatus('err', 'GITHUB_TOKEN não configurado no código — as alterações não vão ser guardadas. Vê o README-prr.md.');
+      return false;
+    }
     setStatus('', 'A carregar dados do GitHub...');
     try{
       const res = await fetch(ghApiUrl() + '?ref=' + encodeURIComponent(github.branch), { headers: ghHeaders() });
@@ -553,7 +519,10 @@
   }
 
   async function githubSave(){
-    if(!github.connected) return false;
+    if(!github.connected){
+      setStatus('err', 'GITHUB_TOKEN não configurado no código — as alterações não vão ser guardadas. Vê o README-prr.md.');
+      return false;
+    }
     setStatus('', 'A guardar no GitHub...');
     try{
       const body = {
@@ -586,34 +555,8 @@
   }
 
   async function persist(){
-    if(github.connected) await githubSave();
-    else setStatus('', 'Guardado nesta sessão do browser (liga ao GitHub para persistir entre sessões — botão "Ligar ao GitHub").');
+    await githubSave();
   }
-
-  $.githubBtn.addEventListener('click', () => {
-    $.ghTarget.textContent = `${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo} · ${GITHUB_CONFIG.path} (${GITHUB_CONFIG.branch})`;
-    $.ghToken.value = github.token;
-    $.ghDisconnectBtn.style.display = github.connected ? '' : 'none';
-    $.githubOverlay.classList.add('open');
-  });
-  $.ghCancelBtn.addEventListener('click', () => $.githubOverlay.classList.remove('open'));
-  $.githubOverlay.addEventListener('click', (e) => { if(e.target === $.githubOverlay) $.githubOverlay.classList.remove('open'); });
-  $.ghDisconnectBtn.addEventListener('click', () => {
-    if(!confirm('Desligar do GitHub? Os dados passam a ficar só nesta sessão do browser.')) return;
-    clearGithubConfig();
-    updateGithubBtn();
-    $.githubOverlay.classList.remove('open');
-    setStatus('', 'Desligado do GitHub.');
-  });
-  $.ghSaveBtn.addEventListener('click', async () => {
-    const token = $.ghToken.value.trim();
-    if(!token){ setStatus('err', 'Preenche o token de acesso.'); return; }
-    Object.assign(github, { token, connected: true, sha: null });
-    saveGithubConfig();
-    updateGithubBtn();
-    $.githubOverlay.classList.remove('open');
-    await githubLoad();
-  });
 
   // --- Importação de Excel (formato "Ponto de Situação Projeto PRR") ---
   function normalizeKey(str){
@@ -1014,10 +957,8 @@
 
   $.exportPptxBtn.addEventListener('click', exportPptx);
 
-  loadGithubConfig();
-  updateGithubBtn();
   render();
-  if(github.connected) githubLoad();
+  githubLoad();
 })();
 </script>
 

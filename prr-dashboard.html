@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel PRR — Acompanhamento de Projetos</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@500;600;700;800&display=swap');
 
   :root{
     --bg: #F4F6FA;
@@ -33,7 +33,7 @@
     margin:0;
     background: var(--bg);
     color: var(--ink);
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Overpass', sans-serif;
     min-height: 100vh;
   }
 
@@ -47,27 +47,24 @@
   h1{ font-weight: 800; font-size: 30px; margin: 0 0 4px; letter-spacing: -0.02em; }
   .lede{ color: var(--ink-soft); font-size: 13.5px; margin: 0; font-weight: 600; }
 
-  .status-bar{
-    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-    padding: 10px 16px; display:flex; align-items:center; gap: 12px;
-    font-size: 13px; color: var(--ink-soft); font-weight: 500;
-  }
-  .status-bar button{
+  .toolbar{ display:flex; align-items:center; gap: 12px; }
+  .toolbar button{
     background: var(--ink); color: #fff; border: none; border-radius: 7px;
-    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 12px;
-    padding: 7px 14px; cursor: pointer;
+    font-family: 'Overpass', sans-serif; font-weight: 700; font-size: 12.5px;
+    padding: 10px 16px; cursor: pointer;
   }
-  .status-bar button:hover{ opacity: .85; }
-  .status-dot{ display:inline-block; width: 7px; height:7px; border-radius: 50%; background: var(--line); }
-  .status-dot.ok{ background: var(--normal); }
-  .status-dot.err{ background: var(--risco); }
+  .toolbar button:hover{ opacity: .85; }
+  .toolbar button:disabled{ background: var(--line); cursor: not-allowed; }
+
+  .status-msg{ font-size: 12.5px; color: var(--ink-soft); font-weight: 600; min-height: 18px; }
+  .status-msg.err{ color: var(--risco); }
 
   .updated{ font-size: 12px; color: var(--ink-soft); font-weight: 600; margin: 4px 0 24px; }
 
   /* Summary */
   .summary{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 28px; }
   .summary .tile{ background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-  .summary .tile .num{ font-family: 'IBM Plex Mono', monospace; font-size: 21px; font-weight: 500; }
+  .summary .tile .num{ font-family: 'Overpass', sans-serif; font-size: 21px; font-weight: 700; }
   .summary .tile .label{ font-size: 10.5px; color: var(--ink-soft); margin-top: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.3; }
 
   /* Filters */
@@ -75,7 +72,7 @@
   .chip{
     border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
     font-size: 12.5px; font-weight: 700; padding: 7px 14px; border-radius: 20px;
-    cursor: pointer; font-family: 'Manrope', sans-serif;
+    cursor: pointer; font-family: 'Overpass', sans-serif;
   }
   .chip.active{ background: var(--ink); color: #fff; border-color: var(--ink); }
   .add-project-btn{
@@ -83,7 +80,6 @@
     padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
   }
   .add-project-btn:hover{ opacity: .85; }
-  .add-project-btn:disabled{ background: var(--line); cursor: not-allowed; }
 
   /* Category groups */
   .category-group{ margin-bottom: 36px; }
@@ -119,7 +115,7 @@
 
   .metrics-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
   .metric-head{ display:flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-soft); font-weight: 700; margin-bottom: 5px; }
-  .metric-head .val{ font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+  .metric-head .val{ font-family: 'Overpass', sans-serif; font-weight: 800; }
   .metric-head .val.normal{ color: var(--normal); }
   .metric-head .val.atencao{ color: var(--atencao); }
   .metric-head .val.risco{ color: var(--risco); }
@@ -132,10 +128,10 @@
   .bar-fill.concluido{ background: var(--concluido); }
 
   .investimento{
-    font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 15px;
+    font-family: 'Overpass', sans-serif; font-weight: 700; font-size: 15px;
     padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--line);
   }
-  .investimento .label{ font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; display:block; margin-bottom: 2px; }
+  .investimento .label{ font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; display:block; margin-bottom: 2px; }
 
   .riscos-box{ border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
   .riscos-box.normal{ background: var(--normal-bg); }
@@ -154,7 +150,7 @@
   .detail-row b{ color: var(--ink); font-weight: 700; }
   .detail-row .txt{ white-space: pre-line; }
 
-  .card-actions{ display:flex; gap: 12px; padding-top: 6px; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .card-actions{ display:flex; gap: 12px; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--line); }
   .card-actions button{ background: none; border: none; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-decoration: underline; cursor: pointer; padding: 0; }
   .card-actions button:hover{ color: var(--ink); }
   .card-actions button.del:hover{ color: var(--risco); }
@@ -171,30 +167,17 @@
   .form-grid label{ display:block; font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
   .form-grid input, .form-grid select, .form-grid textarea{
     width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px;
-    background: var(--bg); font-family: 'Manrope', sans-serif; font-size: 13px; color: var(--ink);
+    background: var(--bg); font-family: 'Overpass', sans-serif; font-size: 13px; color: var(--ink);
   }
-  .form-grid textarea{ font-family: 'Manrope', sans-serif; resize: vertical; min-height: 56px; }
+  .form-grid textarea{ font-family: 'Overpass', sans-serif; resize: vertical; min-height: 56px; }
   .modal-actions{ display:flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
   .modal-actions button{ padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor: pointer; }
   .modal-actions button.secondary{ background: none; color: var(--ink); }
 
-  /* Config panel */
-  .config-panel{ background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; margin-bottom: 24px; display: none; }
-  .config-panel.open{ display: block; }
-  .config-panel h2{ font-size: 17px; font-weight: 800; margin: 0 0 4px; }
-  .config-panel p.hint{ font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; font-weight: 500; }
-  .config-panel label{ display:block; font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
-  .config-panel input{ width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-family: 'Manrope', sans-serif; font-size: 13px; }
-  .config-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-  .config-grid .full{ grid-column: 1/-1; }
-  .config-panel .row-actions{ display:flex; gap: 10px; }
-  .config-panel .row-actions button{ padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor:pointer; }
-  .config-panel .row-actions button.secondary{ background:none; color: var(--ink); }
-
   @media (max-width: 900px){ .summary{ grid-template-columns: 1fr 1fr 1fr; } }
   @media (max-width: 640px){
     .summary{ grid-template-columns: 1fr 1fr; }
-    .form-grid, .config-grid{ grid-template-columns: 1fr; }
+    .form-grid{ grid-template-columns: 1fr; }
     .grid{ grid-template-columns: 1fr; }
     .metrics-row{ grid-template-columns: 1fr; }
   }
@@ -208,27 +191,12 @@
       <h1>Painel PRR</h1>
       <p class="lede">Acompanhamento de projetos — estado, execução, investimento, dependências e riscos.</p>
     </div>
-    <div class="status-bar">
-      <span><span class="status-dot" id="statusDot"></span><span id="statusText">Por ligar</span></span>
-      <button id="toggleConfig">Ligar ao GitHub</button>
+    <div class="toolbar">
+      <button id="exportPptxBtn">Exportar PowerPoint</button>
     </div>
   </header>
+  <p class="status-msg" id="statusMsg"></p>
   <p class="updated" id="updatedLabel"></p>
-
-  <div class="config-panel" id="configPanel">
-    <h2>Ligação ao repositório</h2>
-    <p class="hint">Usa um repositório privado e um fine-grained personal access token com acesso apenas a esse repositório (permissão "Contents: Read and write"). O token fica só em memória nesta aba.</p>
-    <div class="config-grid">
-      <div><label for="owner">Utilizador ou organização</label><input id="owner" placeholder="ex: brunomigueltrigo-design"></div>
-      <div><label for="repo">Repositório</label><input id="repo" placeholder="ex: prrstatus"></div>
-      <div><label for="path">Caminho do ficheiro de dados</label><input id="path" value="projects.json"></div>
-      <div><label for="token">Personal Access Token</label><input id="token" type="password" placeholder="github_pat_..."></div>
-    </div>
-    <div class="row-actions">
-      <button id="connectBtn">Ligar</button>
-      <button class="secondary" id="cancelConfig">Cancelar</button>
-    </div>
-  </div>
 
   <div class="summary" id="summary">
     <div class="tile"><div class="num" id="sumExecucao">0</div><div class="label">Em execução</div></div>
@@ -281,6 +249,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <script>
 (function(){
   const DEFAULT_PROJECTS = [
@@ -422,17 +391,14 @@
 ];
 
   const state = {
-    owner:'', repo:'', path:'projects.json', token:'',
-    connected:false, projects: DEFAULT_PROJECTS.slice(), sha:null, editingId: null, filter: 'todos'
+    projects: DEFAULT_PROJECTS.slice(), editingId: null, filter: 'todos'
   };
 
   const el = id => document.getElementById(id);
   const $ = {
-    toggleConfig: el('toggleConfig'), configPanel: el('configPanel'),
-    connectBtn: el('connectBtn'), cancelConfig: el('cancelConfig'),
-    owner: el('owner'), repo: el('repo'), path: el('path'), token: el('token'),
-    statusDot: el('statusDot'), statusText: el('statusText'), updatedLabel: el('updatedLabel'),
+    statusMsg: el('statusMsg'), updatedLabel: el('updatedLabel'),
     addProjectBtn: el('addProjectBtn'), groupsContainer: el('groupsContainer'), filters: el('filters'),
+    exportPptxBtn: el('exportPptxBtn'),
     overlay: el('overlay'), modalTitle: el('modalTitle'),
     mNome: el('mNome'), mUnidade: el('mUnidade'), mFicha: el('mFicha'), mEstado: el('mEstado'),
     mGestor: el('mGestor'), mTaxaProjeto: el('mTaxaProjeto'), mTaxaFinanceira: el('mTaxaFinanceira'),
@@ -447,74 +413,8 @@
   const ESTADO_COLOR = { em_atraso:'risco', em_execucao:'normal', por_iniciar:'atencao', concluido:'concluido' };
 
   function setStatus(kind, text){
-    $.statusDot.className = 'status-dot' + (kind ? ' ' + kind : '');
-    $.statusText.textContent = text;
-  }
-
-  $.toggleConfig.addEventListener('click', () => $.configPanel.classList.toggle('open'));
-  $.cancelConfig.addEventListener('click', () => $.configPanel.classList.remove('open'));
-
-  function apiUrl(){ return `https://api.github.com/repos/${state.owner}/${state.repo}/contents/${state.path}`; }
-
-  $.connectBtn.addEventListener('click', async () => {
-    state.owner = $.owner.value.trim();
-    state.repo = $.repo.value.trim();
-    state.path = $.path.value.trim() || 'projects.json';
-    state.token = $.token.value.trim();
-
-    if(!state.owner || !state.repo || !state.token){
-      setStatus('err', 'Preenche utilizador, repositório e token.');
-      return;
-    }
-
-    setStatus('', 'A ligar...');
-    try{
-      const res = await fetch(apiUrl(), {
-        headers: { 'Authorization': `Bearer ${state.token}`, 'Accept': 'application/vnd.github+json' }
-      });
-      if(res.status === 404){
-        // Ficheiro ainda não existe no repositório: mantém os dados atuais (já carregados)
-        // e cria o ficheiro na próxima gravação.
-        state.sha = null; state.connected = true;
-      } else if(res.ok){
-        const data = await res.json();
-        state.sha = data.sha;
-        const content = decodeURIComponent(escape(atob(data.content)));
-        const parsed = JSON.parse(content);
-        state.projects = parsed.projects || [];
-        state.connected = true;
-      } else {
-        const errBody = await res.json().catch(() => ({}));
-        setStatus('err', `Erro ${res.status}: ${errBody.message || 'não foi possível ligar.'}`);
-        return;
-      }
-      setStatus('ok', `${state.owner}/${state.repo} · ${state.path}`);
-      $.addProjectBtn.disabled = false;
-      $.configPanel.classList.remove('open');
-      $.toggleConfig.textContent = 'Reconfigurar';
-      render();
-    } catch(e){
-      setStatus('err', 'Falha de rede ao ligar ao GitHub.');
-    }
-  });
-
-  async function saveToGitHub(commitMessage){
-    const body = {
-      message: commitMessage,
-      content: btoa(unescape(encodeURIComponent(JSON.stringify({ projects: state.projects }, null, 2)))),
-    };
-    if(state.sha) body.sha = state.sha;
-    const res = await fetch(apiUrl(), {
-      method:'PUT',
-      headers: { 'Authorization': `Bearer ${state.token}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if(!res.ok){
-      const errBody = await res.json().catch(() => ({}));
-      throw new Error(errBody.message || `Erro ${res.status}`);
-    }
-    const data = await res.json();
-    state.sha = data.content.sha;
+    $.statusMsg.className = 'status-msg' + (kind === 'err' ? ' err' : '');
+    $.statusMsg.textContent = text;
   }
 
   function openModal(project){
@@ -539,7 +439,7 @@
   $.cancelModal.addEventListener('click', closeModal);
   $.overlay.addEventListener('click', (e) => { if(e.target === $.overlay) closeModal(); });
 
-  $.saveProjectBtn.addEventListener('click', async () => {
+  $.saveProjectBtn.addEventListener('click', () => {
     const nome = $.mNome.value.trim();
     if(!nome){ setStatus('err', 'O nome do projeto é obrigatório.'); return; }
 
@@ -564,47 +464,20 @@
     };
 
     const idx = state.projects.findIndex(p => p.id === record.id);
-    const backup = state.projects.slice();
     if(idx >= 0) state.projects[idx] = record; else state.projects.unshift(record);
 
     closeModal();
     render();
-
-    if(!state.connected){
-      setStatus('', 'Guardado só nesta sessão — liga ao GitHub para tornar permanente.');
-      return;
-    }
-
-    setStatus('', 'A gravar no GitHub...');
-    try{
-      await saveToGitHub(`${idx >= 0 ? 'Atualiza' : 'Adiciona'} projeto: ${nome}`);
-      setStatus('ok', `${state.owner}/${state.repo} · ${state.path}`);
-    } catch(e){
-      setStatus('err', 'Erro ao gravar: ' + e.message);
-      state.projects = backup;
-      render();
-    }
+    setStatus('', 'Guardado nesta sessão do browser (esta página não sincroniza com nenhum ficheiro externo).');
   });
 
-  async function deleteProject(id){
+  function deleteProject(id){
     const idx = state.projects.findIndex(p => p.id === id);
     if(idx === -1) return;
-    if(!confirm('Remover este projeto? Esta ação fica registada no histórico do repositório.')) return;
-    const removed = state.projects.splice(idx, 1)[0];
+    if(!confirm('Remover este projeto desta sessão?')) return;
+    state.projects.splice(idx, 1);
     render();
-
-    if(!state.connected){
-      setStatus('', 'Removido só nesta sessão — liga ao GitHub para tornar permanente.');
-      return;
-    }
-
-    try{
-      await saveToGitHub(`Remove projeto: ${removed.nome}`);
-    } catch(e){
-      setStatus('err', 'Erro ao remover: ' + e.message);
-      state.projects.splice(idx, 0, removed);
-      render();
-    }
+    setStatus('', 'Removido nesta sessão do browser.');
   }
 
   $.filters.addEventListener('click', (e) => {
@@ -695,7 +568,6 @@
   function render(){
     const list = state.projects.filter(p => state.filter === 'todos' || p.estado === state.filter);
     renderSummary(state.projects);
-    $.addProjectBtn.disabled = false;
 
     if(state.projects.length){
       const latest = state.projects.reduce((max, p) => (p.updatedAt || '') > max ? p.updatedAt : max, '');
@@ -703,7 +575,7 @@
     }
 
     if(list.length === 0){
-      $.groupsContainer.innerHTML = `<div class="empty-state">${state.connected ? 'Sem projetos nesta vista.' : 'Liga ao GitHub para carregar ou criar projetos.'}</div>`;
+      $.groupsContainer.innerHTML = `<div class="empty-state">Sem projetos nesta vista.</div>`;
       return;
     }
 
@@ -733,6 +605,169 @@
       btn.addEventListener('click', () => deleteProject(btn.dataset.id));
     });
   }
+
+  // --- Exportação PowerPoint ---
+  const PPT_COLOR = {
+    ink: '16213A', inkSoft: '6B7690', line: 'E4E8F0', card: 'FFFFFF', bg: 'F4F6FA',
+    normal: '1E8A5F', normalBg: 'E4F3EC',
+    atencao: 'D98A1E', atencaoBg: 'FCF0DD',
+    risco: 'C6432E', riscoBg: 'FBE6E2',
+    concluido: '2C5F8A', concluidoBg: 'E1EAF1',
+  };
+
+  function avgPct(list, field){
+    const vals = list.filter(p => typeof p[field] === 'number');
+    if(!vals.length) return 0;
+    return Math.round(vals.reduce((s,p) => s + p[field], 0) / vals.length);
+  }
+  function sumField(list, field){
+    return list.reduce((s,p) => s + (typeof p[field] === 'number' ? p[field] : 0), 0);
+  }
+  function groupByUnidade(list){
+    const g = {};
+    list.forEach(p => { const k = p.unidade || 'Sem unidade'; if(!g[k]) g[k] = []; g[k].push(p); });
+    return g;
+  }
+  function chunkArray(arr, size){
+    const out = [];
+    for(let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out;
+  }
+
+  function addProjectCardShape(pres, slide, p, x, y, w, h){
+    const color = ESTADO_COLOR[p.estado] || 'normal';
+    const hex = PPT_COLOR[color];
+    const hexBg = PPT_COLOR[color + 'Bg'];
+
+    slide.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.06, fill: { color: PPT_COLOR.card }, line: { color: PPT_COLOR.line, width: 0.75 } });
+    slide.addShape(pres.ShapeType.rect, { x, y, w: 0.07, h, fill: { color: hex }, line: { type: 'none' } });
+
+    const padL = x + 0.22;
+    const leftW = w * 0.55;
+    const contentW = leftW - 0.35;
+
+    slide.addShape(pres.ShapeType.ellipse, { x: padL, y: y + 0.16, w: 0.13, h: 0.13, fill: { color: hex }, line: { type: 'none' } });
+    slide.addText((p.unidade || '—') + (p.ficha ? ' · Ficha ' + p.ficha : ''), { x: padL + 0.2, y: y + 0.08, w: contentW, h: 0.2, fontSize: 7, bold: true, color: PPT_COLOR.inkSoft, fontFace: 'Overpass' });
+    slide.addText(p.nome || '', { x: padL + 0.2, y: y + 0.27, w: contentW, h: 0.5, fontSize: 10.5, bold: true, color: PPT_COLOR.ink, fontFace: 'Overpass', valign: 'top', shrinkText: true });
+
+    const badgeW = 1.15;
+    slide.addShape(pres.ShapeType.roundRect, { x: x + w - badgeW - 0.15, y: y + 0.14, w: badgeW, h: 0.26, rectRadius: 0.05, fill: { color: hexBg }, line: { type: 'none' } });
+    slide.addText(ESTADO_LABEL[p.estado] || p.estado || '', { x: x + w - badgeW - 0.15, y: y + 0.14, w: badgeW, h: 0.26, align: 'center', fontSize: 7, bold: true, color: hex, fontFace: 'Overpass', valign: 'middle' });
+
+    const barY = y + 0.85;
+    const taxaP = typeof p.taxaProjeto === 'number' ? p.taxaProjeto : null;
+    slide.addText('Execução do projeto', { x: padL, y: barY, w: contentW, h: 0.18, fontSize: 6.5, color: PPT_COLOR.inkSoft, fontFace: 'Overpass' });
+    slide.addText(taxaP !== null ? taxaP + '%' : '—', { x: padL, y: barY, w: contentW, h: 0.18, align: 'right', fontSize: 8.5, bold: true, color: hex, fontFace: 'Overpass' });
+    slide.addShape(pres.ShapeType.rect, { x: padL, y: barY + 0.2, w: contentW, h: 0.06, fill: { color: 'E4E8F0' }, line: { type: 'none' } });
+    if(taxaP){
+      slide.addShape(pres.ShapeType.rect, { x: padL, y: barY + 0.2, w: contentW * Math.min(1, taxaP / 100), h: 0.06, fill: { color: hex }, line: { type: 'none' } });
+    }
+
+    slide.addText('Investimento: ' + fmtEuro(p.investimentoTotal), { x: padL, y: barY + 0.35, w: contentW, h: 0.2, fontSize: 7.5, bold: true, color: PPT_COLOR.ink, fontFace: 'Overpass' });
+
+    const boxX = x + w * 0.58;
+    const boxW = w * 0.4;
+    const boxY = y + 0.14;
+    const boxH = h - 0.28;
+    slide.addShape(pres.ShapeType.roundRect, { x: boxX, y: boxY, w: boxW, h: boxH, rectRadius: 0.04, fill: { color: hexBg }, line: { type: 'none' } });
+    slide.addText('RISCOS', { x: boxX + 0.12, y: boxY + 0.08, w: boxW - 0.24, h: 0.18, fontSize: 6.5, bold: true, color: hex, fontFace: 'Overpass' });
+    slide.addText(p.riscos || 'Sem riscos registados.', { x: boxX + 0.12, y: boxY + 0.28, w: boxW - 0.24, h: boxH - 0.38, fontSize: 7.5, color: PPT_COLOR.ink, fontFace: 'Overpass', valign: 'top', shrinkText: true });
+  }
+
+  function addCoordenacaoSlide(pres, unidade, projects, page, totalPages, PAGE_W, PAGE_H, MARGIN){
+    const slide = pres.addSlide();
+    slide.background = { color: PPT_COLOR.bg };
+    slide.addText('Projetos', { x: MARGIN, y: 0.35, w: 8, h: 0.55, fontSize: 24, bold: true, color: PPT_COLOR.ink, fontFace: 'Overpass' });
+    slide.addText('COORDENAÇÃO ' + unidade.toUpperCase(), { x: MARGIN, y: 0.9, w: 8, h: 0.3, fontSize: 11, bold: true, color: PPT_COLOR.concluido, fontFace: 'Overpass' });
+    if(totalPages > 1){
+      slide.addText(`${page} / ${totalPages}`, { x: PAGE_W - MARGIN - 1.2, y: 0.4, w: 1.2, h: 0.3, align: 'right', fontSize: 10, color: PPT_COLOR.inkSoft, fontFace: 'Overpass' });
+    }
+
+    const cols = 2, rows = 3, gap = 0.22, gridTop = 1.45;
+    const gridW = PAGE_W - MARGIN * 2;
+    const gridH = PAGE_H - gridTop - 0.35;
+    const cardW = (gridW - gap * (cols - 1)) / cols;
+    const cardH = (gridH - gap * (rows - 1)) / rows;
+
+    projects.forEach((p, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const x = MARGIN + col * (cardW + gap);
+      const y = gridTop + row * (cardH + gap);
+      addProjectCardShape(pres, slide, p, x, y, cardW, cardH);
+    });
+  }
+
+  async function exportPptx(){
+    if(typeof PptxGenJS === 'undefined'){
+      setStatus('err', 'A biblioteca de exportação não carregou. Verifica a ligação à internet e tenta de novo.');
+      return;
+    }
+    $.exportPptxBtn.disabled = true;
+    $.exportPptxBtn.textContent = 'A gerar...';
+
+    try{
+      const pres = new PptxGenJS();
+      pres.layout = 'LAYOUT_WIDE';
+      const PAGE_W = 13.33, PAGE_H = 7.5, MARGIN = 0.5;
+      const all = state.projects;
+
+      const dir = pres.addSlide();
+      dir.background = { color: PPT_COLOR.bg };
+      dir.addText('Painel PRR', { x: MARGIN, y: 0.35, w: 8, h: 0.55, fontSize: 26, bold: true, color: PPT_COLOR.ink, fontFace: 'Overpass' });
+      dir.addText('Visão global — Direção · ' + new Date().toLocaleDateString('pt-PT'), { x: MARGIN, y: 0.92, w: 8, h: 0.35, fontSize: 12, color: PPT_COLOR.inkSoft, fontFace: 'Overpass' });
+
+      const stats = [
+        { label: 'Em execução', value: String(all.filter(p => p.estado === 'em_execucao').length) },
+        { label: 'Concluídos', value: String(all.filter(p => p.estado === 'concluido').length) },
+        { label: 'Em atraso', value: String(all.filter(p => p.estado === 'em_atraso').length) },
+        { label: 'Taxa execução projeto', value: avgPct(all, 'taxaProjeto') + '%' },
+        { label: 'Investimento total', value: fmtEuro(sumField(all, 'investimentoTotal')) },
+        { label: 'Taxa execução financeira', value: avgPct(all, 'taxaFinanceira') + '%' },
+      ];
+      const tileGap = 0.15;
+      const tileW = (PAGE_W - MARGIN * 2 - tileGap * (stats.length - 1)) / stats.length;
+      stats.forEach((s, i) => {
+        const x = MARGIN + i * (tileW + tileGap);
+        dir.addShape(pres.ShapeType.roundRect, { x, y: 1.5, w: tileW, h: 1.05, rectRadius: 0.05, fill: { color: PPT_COLOR.card }, line: { color: PPT_COLOR.line, width: 0.75 } });
+        dir.addText(s.value, { x, y: 1.6, w: tileW, h: 0.5, align: 'center', fontSize: 16, bold: true, color: PPT_COLOR.ink, fontFace: 'Overpass', shrinkText: true });
+        dir.addText(s.label, { x: x + 0.05, y: 2.12, w: tileW - 0.1, h: 0.38, align: 'center', fontSize: 7.5, bold: true, color: PPT_COLOR.inkSoft, fontFace: 'Overpass' });
+      });
+
+      const unidades = groupByUnidade(all);
+      let rowY = 2.9;
+      dir.addText('RESUMO POR COORDENAÇÃO', { x: MARGIN, y: rowY, w: 6, h: 0.3, fontSize: 10, bold: true, color: PPT_COLOR.inkSoft, fontFace: 'Overpass' });
+      rowY += 0.4;
+      Object.keys(unidades).sort().forEach(key => {
+        const list = unidades[key];
+        const nAtraso = list.filter(p => p.estado === 'em_atraso').length;
+        const rowColor = nAtraso > 0 ? PPT_COLOR.risco : PPT_COLOR.normal;
+        const rowW = PAGE_W - MARGIN * 2;
+        dir.addShape(pres.ShapeType.roundRect, { x: MARGIN, y: rowY, w: rowW, h: 0.5, rectRadius: 0.04, fill: { color: PPT_COLOR.card }, line: { color: PPT_COLOR.line, width: 0.75 } });
+        dir.addShape(pres.ShapeType.rect, { x: MARGIN, y: rowY, w: 0.07, h: 0.5, fill: { color: rowColor }, line: { type: 'none' } });
+        dir.addText(key, { x: MARGIN + 0.25, y: rowY, w: 2.6, h: 0.5, fontSize: 11, bold: true, color: PPT_COLOR.ink, fontFace: 'Overpass', valign: 'middle' });
+        dir.addText(`${list.length} projeto(s)`, { x: MARGIN + 2.9, y: rowY, w: 2, h: 0.5, fontSize: 9, color: PPT_COLOR.inkSoft, fontFace: 'Overpass', valign: 'middle' });
+        dir.addText(`Execução média: ${avgPct(list, 'taxaProjeto')}%`, { x: MARGIN + 5, y: rowY, w: 3, h: 0.5, fontSize: 9, color: PPT_COLOR.ink, fontFace: 'Overpass', valign: 'middle' });
+        dir.addText(`Em atraso: ${nAtraso}`, { x: MARGIN + rowW - 2.2, y: rowY, w: 2.2, h: 0.5, fontSize: 9, bold: nAtraso > 0, color: nAtraso > 0 ? PPT_COLOR.risco : PPT_COLOR.inkSoft, fontFace: 'Overpass', valign: 'middle', align: 'right' });
+        rowY += 0.62;
+      });
+
+      Object.keys(unidades).sort().forEach(key => {
+        const chunks = chunkArray(unidades[key], 6);
+        chunks.forEach((chunk, i) => addCoordenacaoSlide(pres, key, chunk, i + 1, chunks.length, PAGE_W, PAGE_H, MARGIN));
+      });
+
+      await pres.writeFile({ fileName: 'Painel-PRR.pptx' });
+      setStatus('', 'PowerPoint gerado.');
+    } catch(e){
+      setStatus('err', 'Erro ao gerar PowerPoint: ' + e.message);
+    } finally {
+      $.exportPptxBtn.disabled = false;
+      $.exportPptxBtn.textContent = 'Exportar PowerPoint';
+    }
+  }
+
+  $.exportPptxBtn.addEventListener('click', exportPptx);
 
   render();
 })();

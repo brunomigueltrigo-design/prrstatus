@@ -8,19 +8,18 @@ Link público: `https://brunomigueltrigo-design.github.io/prrstatus/prr-dashboar
 
 Por omissão, os dados vêm embutidos no próprio `prr-dashboard.html` e qualquer edição feita na página só dura enquanto a página não é recarregada.
 
-Para persistir as alterações entre sessões, o painel pode ligar-se diretamente a este repositório e guardar os dados no ficheiro `projects.json`, usando a API do GitHub — sem qualquer backend ou base de dados externa:
+Para persistir as alterações entre sessões, o painel pode ligar-se diretamente a este repositório e guardar os dados no ficheiro `projects.json`, usando a API do GitHub — sem qualquer backend ou base de dados externa.
+
+O repositório de destino (`brunomigueltrigo-design/prrstatus`, ficheiro `projects.json`, branch `main`) está **fixo no código** do `prr-dashboard.html` (constante `GITHUB_CONFIG`) — não é algo que se preencha na página. A única coisa que se introduz no browser é o **token de acesso**, porque é uma credencial e nunca deve ficar escrita em código publicado:
 
 1. Cria um **token de acesso fine-grained**: [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) → "Generate new token" → restringe o "Repository access" a este repositório (`prrstatus`) → em "Permissions", dá **"Contents: Read and write"**.
 2. Abre o painel e clica em **"Ligar ao GitHub"** (canto superior direito).
-3. Preenche:
-   - **Utilizador/Organização**: `brunomigueltrigo-design`
-   - **Repositório**: `prrstatus`
-   - **Ficheiro de dados**: `projects.json`
-   - **Branch**: `main`
-   - **Token**: o token criado no passo 1
-4. Clica em "Ligar". O painel carrega os projetos atuais de `projects.json` e, a partir daí, cada criação/edição/remoção de projeto (e cada importação de Excel) fica automaticamente gravada nesse ficheiro, **como um commit novo no repositório** — com histórico completo de alterações.
+3. Cola o token e clica em "Ligar".
+4. O painel carrega os projetos atuais de `projects.json` e, a partir daí, cada criação/edição/remoção de projeto (e cada importação de Excel) fica automaticamente gravada nesse ficheiro, **como um commit novo no repositório** — com histórico completo de alterações.
 
-O token fica guardado apenas no `localStorage` do browser onde ligaste — nunca é enviado para mais lado nenhum além da API do GitHub. Cada pessoa que precise de editar (não só ver) o painel no seu próprio browser tem de repetir este passo com o seu próprio token.
+O token fica guardado apenas no `localStorage` do browser onde ligaste — nunca é enviado para mais lado nenhum além da API do GitHub, e nunca fica escrito no código da página. Cada pessoa que precise de editar (não só ver) o painel no seu próprio browser tem de repetir este passo com o seu próprio token.
+
+**Sem ligar o token, os projetos criados/editados na página ficam apenas em memória do browser** (no array `state.projects`, dentro da sessão atual) — perdem-se ao recarregar a página. Não há nenhum outro sítio a guardar dados por omissão.
 
 Sem ligação ao GitHub, o painel continua a funcionar normalmente em modo "só nesta sessão" — útil para testar ou para quem só precisa de consultar.
 

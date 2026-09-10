@@ -473,11 +473,13 @@
   // seguro por design — a chave anon é para ficar pública, a segurança vem das
   // políticas de Row Level Security configuradas na tabela (ver README-prr.md).
   // Sem login: qualquer pessoa com o link da página pode ler e escrever dados.
-  const SUPABASE_URL = 'COLOCAR_SUPABASE_URL_AQUI';
-  const SUPABASE_ANON_KEY = 'COLOCAR_SUPABASE_ANON_KEY_AQUI';
+  const SUPABASE_URL = 'https://yqsyqixmcukhdunybpyw.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_Ckl-qk8aiwAqqkfcxZD7tg_oK4EY_Um';
   const SUPABASE_CONFIGURED = SUPABASE_URL !== 'COLOCAR_SUPABASE_URL_AQUI' && SUPABASE_ANON_KEY !== 'COLOCAR_SUPABASE_ANON_KEY_AQUI';
 
-  const sb = SUPABASE_CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+  const sb = (SUPABASE_CONFIGURED && typeof supabase !== 'undefined')
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
 
   function rowToProject(row){
     return {
@@ -498,11 +500,20 @@
     };
   }
 
-  async function dbLoad(){
+  function dbReady(){
     if(!SUPABASE_CONFIGURED){
       setStatus('err', 'Supabase não configurado no código — as alterações não vão ser guardadas. Vê o README-prr.md.');
       return false;
     }
+    if(!sb){
+      setStatus('err', 'A biblioteca do Supabase não carregou — verifica a ligação à internet e tenta recarregar a página.');
+      return false;
+    }
+    return true;
+  }
+
+  async function dbLoad(){
+    if(!dbReady()) return false;
     setStatus('', 'A carregar dados...');
     try{
       const { data, error } = await sb.from('projects').select('*').order('updated_at', { ascending: false });
@@ -518,10 +529,7 @@
   }
 
   async function dbSaveProject(project){
-    if(!SUPABASE_CONFIGURED){
-      setStatus('err', 'Supabase não configurado no código — as alterações não vão ser guardadas. Vê o README-prr.md.');
-      return false;
-    }
+    if(!dbReady()) return false;
     setStatus('', 'A guardar...');
     try{
       const { error } = await sb.from('projects').upsert(projectToRow(project));
@@ -535,10 +543,7 @@
   }
 
   async function dbReplaceAll(projects){
-    if(!SUPABASE_CONFIGURED){
-      setStatus('err', 'Supabase não configurado no código — as alterações não vão ser guardadas. Vê o README-prr.md.');
-      return false;
-    }
+    if(!dbReady()) return false;
     setStatus('', 'A guardar...');
     try{
       const { error: delErr } = await sb.from('projects').delete().not('id', 'is', null);

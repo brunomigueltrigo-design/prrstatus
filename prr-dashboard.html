@@ -16,15 +16,15 @@
 
     --normal: #1E8A5F;
     --normal-bg: #E4F3EC;
-    --normal-bar: #1E8A5F;
 
     --atencao: #D98A1E;
     --atencao-bg: #FCF0DD;
-    --atencao-bar: #E5A63C;
 
     --risco: #C6432E;
     --risco-bg: #FBE6E2;
-    --risco-bar: #C6432E;
+
+    --concluido: #2C5F8A;
+    --concluido-bg: #E1EAF1;
   }
 
   *{ box-sizing: border-box; }
@@ -37,441 +37,166 @@
     min-height: 100vh;
   }
 
-  .wrap{
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 40px 24px 100px;
-  }
+  .wrap{ max-width: 1240px; margin: 0 auto; padding: 40px 24px 100px; }
 
   header{
-    display:flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 24px;
-    margin-bottom: 28px;
+    display:flex; justify-content: space-between; align-items: flex-start;
+    flex-wrap: wrap; gap: 24px; margin-bottom: 6px;
   }
 
-  h1{
-    font-weight: 800;
-    font-size: 32px;
-    margin: 0 0 6px;
-    letter-spacing: -0.02em;
-  }
-
-  .lede{
-    color: var(--ink-soft);
-    font-size: 14px;
-    margin: 0;
-    max-width: 46ch;
-    font-weight: 500;
-  }
+  h1{ font-weight: 800; font-size: 30px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .lede{ color: var(--ink-soft); font-size: 13.5px; margin: 0; font-weight: 600; }
 
   .status-bar{
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 10px 16px;
-    display:flex;
-    align-items:center;
-    gap: 12px;
-    font-size: 13px;
-    color: var(--ink-soft);
-    font-weight: 500;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 16px; display:flex; align-items:center; gap: 12px;
+    font-size: 13px; color: var(--ink-soft); font-weight: 500;
   }
-
   .status-bar button{
-    background: var(--ink);
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    font-family: 'Manrope', sans-serif;
-    font-weight: 700;
-    font-size: 12px;
-    padding: 7px 14px;
-    cursor: pointer;
+    background: var(--ink); color: #fff; border: none; border-radius: 7px;
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 12px;
+    padding: 7px 14px; cursor: pointer;
   }
   .status-bar button:hover{ opacity: .85; }
-
-  .status-dot{
-    display:inline-block;
-    width: 7px; height:7px;
-    border-radius: 50%;
-    background: var(--line);
-  }
+  .status-dot{ display:inline-block; width: 7px; height:7px; border-radius: 50%; background: var(--line); }
   .status-dot.ok{ background: var(--normal); }
   .status-dot.err{ background: var(--risco); }
 
+  .updated{ font-size: 12px; color: var(--ink-soft); font-weight: 600; margin: 4px 0 24px; }
+
   /* Summary */
-  .summary{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 32px;
-  }
-
-  .summary .tile{
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 18px 20px;
-  }
-
-  .summary .tile .num{
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 26px;
-    font-weight: 500;
-  }
-
-  .summary .tile .label{
-    font-size: 12px;
-    color: var(--ink-soft);
-    margin-top: 4px;
-    font-weight: 600;
-  }
+  .summary{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 28px; }
+  .summary .tile{ background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .summary .tile .num{ font-family: 'IBM Plex Mono', monospace; font-size: 21px; font-weight: 500; }
+  .summary .tile .label{ font-size: 10.5px; color: var(--ink-soft); margin-top: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.3; }
 
   /* Filters */
-  .filters{
-    display:flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 28px;
-    align-items:center;
-  }
-
+  .filters{ display:flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; align-items:center; }
   .chip{
-    border: 1px solid var(--line);
-    background: var(--card);
-    color: var(--ink-soft);
-    font-size: 12.5px;
-    font-weight: 700;
-    padding: 7px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-family: 'Manrope', sans-serif;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+    font-size: 12.5px; font-weight: 700; padding: 7px 14px; border-radius: 20px;
+    cursor: pointer; font-family: 'Manrope', sans-serif;
   }
-
-  .chip.active{
-    background: var(--ink);
-    color: #fff;
-    border-color: var(--ink);
-  }
-
+  .chip.active{ background: var(--ink); color: #fff; border-color: var(--ink); }
   .add-project-btn{
-    margin-left: auto;
-    background: var(--ink);
-    color: #fff;
-    border: none;
-    border-radius: 20px;
-    padding: 9px 18px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
+    margin-left: auto; background: var(--ink); color: #fff; border: none; border-radius: 20px;
+    padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
   }
   .add-project-btn:hover{ opacity: .85; }
   .add-project-btn:disabled{ background: var(--line); cursor: not-allowed; }
 
   /* Category groups */
   .category-group{ margin-bottom: 36px; }
-
   .category-title{
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    margin: 0 0 14px;
-    padding-left: 2px;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 14px; padding-left: 2px;
   }
 
-  .grid{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-    gap: 18px;
-  }
+  .grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); gap: 18px; }
 
   .card{
-    background: var(--card);
-    border-radius: 14px;
+    background: var(--card); border-radius: 14px;
     box-shadow: 0 1px 2px rgba(22,33,58,0.04), 0 8px 24px -16px rgba(22,33,58,0.15);
-    display: flex;
-    overflow: hidden;
-    border: 1px solid var(--line);
+    overflow: hidden; border: 1px solid var(--line);
   }
-
-  .card-bar{
-    width: 6px;
-    flex-shrink: 0;
-  }
+  .card-bar{ height: 5px; }
   .card-bar.normal{ background: var(--normal); }
   .card-bar.atencao{ background: var(--atencao); }
   .card-bar.risco{ background: var(--risco); }
+  .card-bar.concluido{ background: var(--concluido); }
 
-  .card-left{
-    flex: 1;
-    min-width: 0;
-    padding: 18px 18px 18px 16px;
-    display:flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 14px;
-  }
+  .card-inner{ padding: 18px 20px 16px; }
 
-  .card-left-top{
-    display:flex;
-    gap: 10px;
-    align-items:flex-start;
-  }
+  .card-top{ display:flex; justify-content: space-between; align-items:flex-start; gap: 10px; margin-bottom: 14px; }
+  .card-top .meta{ font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px; }
+  .card-top h3{ font-size: 16.5px; font-weight: 800; margin: 0; line-height: 1.3; }
 
-  .dot{
-    width: 13px; height: 13px;
-    border-radius: 50%;
-    margin-top: 3px;
-    flex-shrink: 0;
-  }
-  .dot.normal{ background: var(--normal); }
-  .dot.atencao{ background: var(--atencao); }
-  .dot.risco{ background: var(--risco); }
+  .badge{ font-size: 11px; padding: 4px 11px; border-radius: 20px; font-weight: 700; white-space: nowrap; }
+  .badge.normal{ background: var(--normal-bg); color: var(--normal); }
+  .badge.atencao{ background: var(--atencao-bg); color: var(--atencao); }
+  .badge.risco{ background: var(--risco-bg); color: var(--risco); }
+  .badge.concluido{ background: var(--concluido-bg); color: var(--concluido); }
 
-  .card-left h3{
-    font-size: 15.5px;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.35;
-  }
-
-  .card-left .entity{
-    font-size: 12px;
-    color: var(--ink-soft);
-    font-weight: 600;
-    margin-top: 2px;
-  }
-
-  .pct-row{
-    display:flex;
-    justify-content: flex-end;
-  }
-  .pct-row .pct{
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 500;
-    font-size: 20px;
-  }
-  .pct.normal{ color: var(--normal); }
-  .pct.atencao{ color: var(--atencao); }
-  .pct.risco{ color: var(--risco); }
-
-  .bar{
-    height: 7px;
-    background: var(--bg);
-    border-radius: 4px;
-    overflow: hidden;
-  }
+  .metrics-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .metric-head{ display:flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-soft); font-weight: 700; margin-bottom: 5px; }
+  .metric-head .val{ font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+  .metric-head .val.normal{ color: var(--normal); }
+  .metric-head .val.atencao{ color: var(--atencao); }
+  .metric-head .val.risco{ color: var(--risco); }
+  .metric-head .val.concluido{ color: var(--concluido); }
+  .bar{ height: 6px; background: var(--bg); border-radius: 4px; overflow: hidden; }
   .bar-fill{ height: 100%; border-radius: 4px; }
-  .bar-fill.normal{ background: var(--normal-bar); }
-  .bar-fill.atencao{ background: var(--atencao-bar); }
-  .bar-fill.risco{ background: var(--risco-bar); }
+  .bar-fill.normal{ background: var(--normal); }
+  .bar-fill.atencao{ background: var(--atencao); }
+  .bar-fill.risco{ background: var(--risco); }
+  .bar-fill.concluido{ background: var(--concluido); }
 
-  .budget{
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 500;
-    font-size: 16px;
+  .investimento{
+    font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 15px;
+    padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--line);
   }
+  .investimento .label{ font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; display:block; margin-bottom: 2px; }
 
-  .card-actions{
-    display:flex;
-    gap: 12px;
-    padding-top: 2px;
-  }
-  .card-actions button{
-    background: none;
-    border: none;
-    font-size: 11.5px;
-    font-weight: 700;
-    color: var(--ink-soft);
-    text-decoration: underline;
-    cursor: pointer;
-    padding: 0;
-  }
+  .riscos-box{ border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .riscos-box.normal{ background: var(--normal-bg); }
+  .riscos-box.atencao{ background: var(--atencao-bg); }
+  .riscos-box.risco{ background: var(--risco-bg); }
+  .riscos-box.concluido{ background: var(--concluido-bg); }
+  .riscos-box .label{ font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; }
+  .riscos-box.normal .label{ color: var(--normal); }
+  .riscos-box.atencao .label{ color: var(--atencao); }
+  .riscos-box.risco .label{ color: var(--risco); }
+  .riscos-box.concluido .label{ color: var(--concluido); }
+  .riscos-box .txt{ font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.45; white-space: pre-line; }
+  .riscos-box .txt.empty{ font-weight: 500; font-style: italic; opacity: .6; }
+
+  .detail-row{ font-size: 12.5px; color: var(--ink-soft); margin-bottom: 8px; line-height: 1.5; }
+  .detail-row b{ color: var(--ink); font-weight: 700; }
+  .detail-row .txt{ white-space: pre-line; }
+
+  .card-actions{ display:flex; gap: 12px; padding-top: 6px; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .card-actions button{ background: none; border: none; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-decoration: underline; cursor: pointer; padding: 0; }
   .card-actions button:hover{ color: var(--ink); }
   .card-actions button.del:hover{ color: var(--risco); }
 
-  .card-right{
-    width: 42%;
-    flex-shrink: 0;
-    margin: 12px 14px 12px 0;
-    border-radius: 10px;
-    padding: 14px 16px;
-    display:flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 8px;
-  }
-  .card-right.normal{ background: var(--normal-bg); }
-  .card-right.atencao{ background: var(--atencao-bg); }
-  .card-right.risco{ background: var(--risco-bg); }
-
-  .card-right .label{
-    font-size: 10.5px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-  .card-right.normal .label{ color: var(--normal); }
-  .card-right.atencao .label{ color: var(--atencao); }
-  .card-right.risco .label{ color: var(--risco); }
-
-  .card-right .situacao{
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.45;
-    color: var(--ink);
-  }
-  .card-right .situacao.empty{
-    font-weight: 500;
-    font-style: italic;
-    opacity: .6;
-  }
-
-  .card-right .prazo{
-    margin-top: auto;
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    padding-top: 8px;
-    border-top: 1px solid rgba(22,33,58,0.08);
-  }
-  .card-right .prazo .val{
-    font-family: 'IBM Plex Mono', monospace;
-    color: var(--ink);
-  }
-
-  .empty-state{
-    grid-column: 1 / -1;
-    text-align:center;
-    padding: 60px 20px;
-    color: var(--ink-soft);
-    font-weight: 500;
-  }
+  .empty-state{ grid-column: 1 / -1; text-align:center; padding: 60px 20px; color: var(--ink-soft); font-weight: 500; }
 
   /* Modal */
-  .overlay{
-    position: fixed; inset: 0;
-    background: rgba(22,33,58,0.45);
-    display:none;
-    align-items:center; justify-content:center;
-    padding: 20px;
-    z-index: 10;
-  }
+  .overlay{ position: fixed; inset: 0; background: rgba(22,33,58,0.45); display:none; align-items:center; justify-content:center; padding: 20px; z-index: 10; }
   .overlay.open{ display:flex; }
-
-  .modal{
-    background: var(--card);
-    max-width: 580px;
-    width: 100%;
-    max-height: 88vh;
-    overflow-y: auto;
-    padding: 28px 30px;
-    border-radius: 16px;
-  }
-
-  .modal h2{
-    font-size: 19px;
-    font-weight: 800;
-    margin: 0 0 18px;
-  }
-
-  .form-grid{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
+  .modal{ background: var(--card); max-width: 620px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 28px 30px; border-radius: 16px; }
+  .modal h2{ font-size: 19px; font-weight: 800; margin: 0 0 18px; }
+  .form-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   .form-grid .full{ grid-column: 1/-1; }
+  .form-grid label{ display:block; font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+  .form-grid input, .form-grid select, .form-grid textarea{
+    width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--bg); font-family: 'Manrope', sans-serif; font-size: 13px; color: var(--ink);
+  }
+  .form-grid textarea{ font-family: 'Manrope', sans-serif; resize: vertical; min-height: 56px; }
+  .modal-actions{ display:flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  .modal-actions button{ padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor: pointer; }
+  .modal-actions button.secondary{ background: none; color: var(--ink); }
 
-  .form-grid label, .config-panel label{
-    display:block;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--ink-soft);
-    margin-bottom: 5px;
-  }
-
-  .form-grid input, .form-grid select, .form-grid textarea, .config-panel input{
-    width: 100%;
-    padding: 9px 10px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--bg);
-    font-family: 'Manrope', sans-serif;
-    font-size: 13px;
-    color: var(--ink);
-  }
-  .form-grid textarea{ font-family: 'Manrope', sans-serif; resize: vertical; min-height: 60px; }
-
-  .modal-actions{
-    display:flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 18px;
-  }
-
-  .modal-actions button{
-    padding: 9px 18px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    border: 1px solid var(--ink);
-    background: var(--ink);
-    color: #fff;
-    cursor: pointer;
-  }
-  .modal-actions button.secondary{
-    background: none;
-    color: var(--ink);
-  }
-
-  /* Config panel (GitHub connection) */
-  .config-panel{
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 22px 24px;
-    margin-bottom: 24px;
-    display: none;
-  }
+  /* Config panel */
+  .config-panel{ background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; margin-bottom: 24px; display: none; }
   .config-panel.open{ display: block; }
-  .config-panel h2{
-    font-size: 17px;
-    font-weight: 800;
-    margin: 0 0 4px;
-  }
-  .config-panel p.hint{
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin: 0 0 16px;
-    font-weight: 500;
-  }
-  .config-grid{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
+  .config-panel h2{ font-size: 17px; font-weight: 800; margin: 0 0 4px; }
+  .config-panel p.hint{ font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; font-weight: 500; }
+  .config-panel label{ display:block; font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+  .config-panel input{ width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-family: 'Manrope', sans-serif; font-size: 13px; }
+  .config-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
   .config-grid .full{ grid-column: 1/-1; }
   .config-panel .row-actions{ display:flex; gap: 10px; }
-  .config-panel .row-actions button{
-    padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700;
-    border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor:pointer;
-  }
+  .config-panel .row-actions button{ padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor:pointer; }
   .config-panel .row-actions button.secondary{ background:none; color: var(--ink); }
 
+  @media (max-width: 900px){ .summary{ grid-template-columns: 1fr 1fr 1fr; } }
   @media (max-width: 640px){
     .summary{ grid-template-columns: 1fr 1fr; }
     .form-grid, .config-grid{ grid-template-columns: 1fr; }
     .grid{ grid-template-columns: 1fr; }
-    .card{ flex-direction: column; }
-    .card-bar{ width: 100%; height: 6px; }
-    .card-right{ width: auto; margin: 0 14px 14px; }
+    .metrics-row{ grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -481,34 +206,23 @@
   <header>
     <div>
       <h1>Painel PRR</h1>
-      <p class="lede">Acompanhamento de estado, execução financeira, execução funcional, prazos e desafios dos projetos.</p>
+      <p class="lede">Acompanhamento de projetos — estado, execução, investimento, dependências e riscos.</p>
     </div>
     <div class="status-bar">
       <span><span class="status-dot" id="statusDot"></span><span id="statusText">Por ligar</span></span>
       <button id="toggleConfig">Ligar ao GitHub</button>
     </div>
   </header>
+  <p class="updated" id="updatedLabel"></p>
 
   <div class="config-panel" id="configPanel">
     <h2>Ligação ao repositório</h2>
     <p class="hint">Usa um repositório privado e um fine-grained personal access token com acesso apenas a esse repositório (permissão "Contents: Read and write"). O token fica só em memória nesta aba.</p>
     <div class="config-grid">
-      <div>
-        <label for="owner">Utilizador ou organização</label>
-        <input id="owner" placeholder="ex: a-tua-conta">
-      </div>
-      <div>
-        <label for="repo">Repositório</label>
-        <input id="repo" placeholder="ex: prrstatus">
-      </div>
-      <div>
-        <label for="path">Caminho do ficheiro de dados</label>
-        <input id="path" placeholder="ex: projects.json" value="projects.json">
-      </div>
-      <div>
-        <label for="token">Personal Access Token</label>
-        <input id="token" type="password" placeholder="github_pat_...">
-      </div>
+      <div><label for="owner">Utilizador ou organização</label><input id="owner" placeholder="ex: brunomigueltrigo-design"></div>
+      <div><label for="repo">Repositório</label><input id="repo" placeholder="ex: prrstatus"></div>
+      <div><label for="path">Caminho do ficheiro de dados</label><input id="path" value="projects.json"></div>
+      <div><label for="token">Personal Access Token</label><input id="token" type="password" placeholder="github_pat_..."></div>
     </div>
     <div class="row-actions">
       <button id="connectBtn">Ligar</button>
@@ -517,19 +231,20 @@
   </div>
 
   <div class="summary" id="summary">
-    <div class="tile"><div class="num" id="sumTotal">0</div><div class="label">projetos</div></div>
-    <div class="tile"><div class="num" id="sumExecucao">0</div><div class="label">em execução</div></div>
-    <div class="tile"><div class="num" id="sumFinanceiro">0%</div><div class="label">execução financeira média</div></div>
-    <div class="tile"><div class="num" id="sumDesafios">0</div><div class="label">com desafios registados</div></div>
+    <div class="tile"><div class="num" id="sumExecucao">0</div><div class="label">Em execução</div></div>
+    <div class="tile"><div class="num" id="sumConcluidos">0</div><div class="label">Concluídos</div></div>
+    <div class="tile"><div class="num" id="sumAtraso">0</div><div class="label">Em atraso</div></div>
+    <div class="tile"><div class="num" id="sumTaxaProjeto">0%</div><div class="label">Taxa execução projeto</div></div>
+    <div class="tile"><div class="num" id="sumInvestimento">€0</div><div class="label">Investimento total</div></div>
+    <div class="tile"><div class="num" id="sumTaxaFin">0%</div><div class="label">Taxa execução financeira</div></div>
   </div>
 
   <div class="filters" id="filters">
     <button class="chip active" data-filter="todos">Todos</button>
-    <button class="chip" data-filter="candidatura">Candidatura</button>
-    <button class="chip" data-filter="aprovado">Aprovado</button>
-    <button class="chip" data-filter="execucao">Em execução</button>
+    <button class="chip" data-filter="em_atraso">Em atraso</button>
+    <button class="chip" data-filter="em_execucao">Em execução</button>
+    <button class="chip" data-filter="por_iniciar">Por iniciar</button>
     <button class="chip" data-filter="concluido">Concluído</button>
-    <button class="chip" data-filter="suspenso">Suspenso</button>
     <button class="add-project-btn" id="addProjectBtn" disabled>+ Novo projeto</button>
   </div>
 
@@ -540,60 +255,24 @@
   <div class="modal">
     <h2 id="modalTitle">Novo projeto</h2>
     <div class="form-grid">
-      <div class="full">
-        <label for="mName">Nome do projeto</label>
-        <input id="mName" placeholder="ex: Aq. de Equipamento Informático Medical Grade">
-      </div>
-      <div>
-        <label for="mCategoria">Categoria</label>
-        <input id="mCategoria" placeholder="ex: Equipamento">
-      </div>
-      <div>
-        <label for="mEntity">Entidade responsável</label>
-        <input id="mEntity" placeholder="ex: Município Y">
-      </div>
-      <div>
-        <label for="mStatus">Estado / fase</label>
-        <select id="mStatus">
-          <option value="candidatura">Candidatura</option>
-          <option value="aprovado">Aprovado</option>
-          <option value="execucao">Em execução</option>
+      <div class="full"><label for="mNome">Nome do Projeto</label><input id="mNome" placeholder="ex: Data Lake"></div>
+      <div><label for="mUnidade">Unidade</label><input id="mUnidade" list="unidadeList" placeholder="ex: UIA"><datalist id="unidadeList"><option value="UIA"><option value="UPACE"><option value="UID"><option value="URN"></datalist></div>
+      <div><label for="mFicha">Nº Ficha Projeto</label><input id="mFicha" placeholder="opcional"></div>
+      <div><label for="mEstado">Estado</label>
+        <select id="mEstado">
+          <option value="em_atraso">Em atraso</option>
+          <option value="em_execucao">Em execução</option>
+          <option value="por_iniciar">Por iniciar</option>
           <option value="concluido">Concluído</option>
-          <option value="suspenso">Suspenso</option>
         </select>
       </div>
-      <div>
-        <label for="mSaude">Situação (cor do cartão)</label>
-        <select id="mSaude">
-          <option value="normal">A decorrer bem (verde)</option>
-          <option value="atencao">Atenção / a aguardar (laranja)</option>
-          <option value="risco">Risco / atrasado (vermelho)</option>
-        </select>
-      </div>
-      <div>
-        <label for="mPrazoData">Próximo prazo/marco (data)</label>
-        <input id="mPrazoData" type="date">
-      </div>
-      <div>
-        <label for="mPrazoDesc">Descrição do marco</label>
-        <input id="mPrazoDesc" placeholder="ex: Entrega do relatório trimestral">
-      </div>
-      <div>
-        <label for="mVerbaAtribuida">Verba atribuída (€)</label>
-        <input id="mVerbaAtribuida" type="number" min="0" step="0.01">
-      </div>
-      <div>
-        <label for="mVerbaExecutada">Verba executada (€)</label>
-        <input id="mVerbaExecutada" type="number" min="0" step="0.01">
-      </div>
-      <div class="full">
-        <label for="mFuncionalPct">Execução funcional (%)</label>
-        <input id="mFuncionalPct" type="number" min="0" max="100" step="1">
-      </div>
-      <div class="full">
-        <label for="mDesafios">Situação atual / desafios (texto da caixa "Informação")</label>
-        <textarea id="mDesafios" placeholder="ex: Aguarda visto do TdC"></textarea>
-      </div>
+      <div><label for="mGestor">Gestor de Projeto</label><input id="mGestor" placeholder="ex: Nome Apelido"></div>
+      <div><label for="mTaxaProjeto">Taxa de execução do projeto (%)</label><input id="mTaxaProjeto" type="number" min="0" max="100" step="1"></div>
+      <div><label for="mTaxaFinanceira">Taxa de execução financeira (%)</label><input id="mTaxaFinanceira" type="number" min="0" max="100" step="1"></div>
+      <div class="full"><label for="mInvestimento">Investimento total (€)</label><input id="mInvestimento" type="number" min="0" step="0.01"></div>
+      <div class="full"><label for="mDependencias">Dependências</label><textarea id="mDependencias"></textarea></div>
+      <div class="full"><label for="mRiscos">Riscos</label><textarea id="mRiscos"></textarea></div>
+      <div class="full"><label for="mProximosPassos">Próximos Passos</label><textarea id="mProximosPassos"></textarea></div>
     </div>
     <div class="modal-actions">
       <button id="saveProjectBtn">Guardar</button>
@@ -614,23 +293,20 @@
     toggleConfig: el('toggleConfig'), configPanel: el('configPanel'),
     connectBtn: el('connectBtn'), cancelConfig: el('cancelConfig'),
     owner: el('owner'), repo: el('repo'), path: el('path'), token: el('token'),
-    statusDot: el('statusDot'), statusText: el('statusText'),
+    statusDot: el('statusDot'), statusText: el('statusText'), updatedLabel: el('updatedLabel'),
     addProjectBtn: el('addProjectBtn'), groupsContainer: el('groupsContainer'), filters: el('filters'),
     overlay: el('overlay'), modalTitle: el('modalTitle'),
-    mName: el('mName'), mCategoria: el('mCategoria'), mEntity: el('mEntity'), mStatus: el('mStatus'),
-    mSaude: el('mSaude'),
-    mPrazoData: el('mPrazoData'), mPrazoDesc: el('mPrazoDesc'),
-    mVerbaAtribuida: el('mVerbaAtribuida'), mVerbaExecutada: el('mVerbaExecutada'),
-    mFuncionalPct: el('mFuncionalPct'), mDesafios: el('mDesafios'),
+    mNome: el('mNome'), mUnidade: el('mUnidade'), mFicha: el('mFicha'), mEstado: el('mEstado'),
+    mGestor: el('mGestor'), mTaxaProjeto: el('mTaxaProjeto'), mTaxaFinanceira: el('mTaxaFinanceira'),
+    mInvestimento: el('mInvestimento'), mDependencias: el('mDependencias'), mRiscos: el('mRiscos'),
+    mProximosPassos: el('mProximosPassos'),
     saveProjectBtn: el('saveProjectBtn'), cancelModal: el('cancelModal'),
-    sumTotal: el('sumTotal'), sumExecucao: el('sumExecucao'),
-    sumFinanceiro: el('sumFinanceiro'), sumDesafios: el('sumDesafios'),
+    sumExecucao: el('sumExecucao'), sumConcluidos: el('sumConcluidos'), sumAtraso: el('sumAtraso'),
+    sumTaxaProjeto: el('sumTaxaProjeto'), sumInvestimento: el('sumInvestimento'), sumTaxaFin: el('sumTaxaFin'),
   };
 
-  const STATUS_LABEL = {
-    candidatura: 'Candidatura', aprovado: 'Aprovado', execucao: 'Em execução',
-    concluido: 'Concluído', suspenso: 'Suspenso'
-  };
+  const ESTADO_LABEL = { em_atraso:'Em atraso', em_execucao:'Em execução', por_iniciar:'Por iniciar', concluido:'Concluído' };
+  const ESTADO_COLOR = { em_atraso:'risco', em_execucao:'normal', por_iniciar:'atencao', concluido:'concluido' };
 
   function setStatus(kind, text){
     $.statusDot.className = 'status-dot' + (kind ? ' ' + kind : '');
@@ -640,9 +316,7 @@
   $.toggleConfig.addEventListener('click', () => $.configPanel.classList.toggle('open'));
   $.cancelConfig.addEventListener('click', () => $.configPanel.classList.remove('open'));
 
-  function apiUrl(){
-    return `https://api.github.com/repos/${state.owner}/${state.repo}/contents/${state.path}`;
-  }
+  function apiUrl(){ return `https://api.github.com/repos/${state.owner}/${state.repo}/contents/${state.path}`; }
 
   $.connectBtn.addEventListener('click', async () => {
     state.owner = $.owner.value.trim();
@@ -692,11 +366,7 @@
     if(state.sha) body.sha = state.sha;
     const res = await fetch(apiUrl(), {
       method:'PUT',
-      headers: {
-        'Authorization': `Bearer ${state.token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Authorization': `Bearer ${state.token}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     if(!res.ok){
@@ -707,21 +377,20 @@
     state.sha = data.content.sha;
   }
 
-  // --- Modal handling ---
   function openModal(project){
     state.editingId = project ? project.id : null;
     $.modalTitle.textContent = project ? 'Editar projeto' : 'Novo projeto';
-    $.mName.value = project?.name || '';
-    $.mCategoria.value = project?.categoria || '';
-    $.mEntity.value = project?.entity || '';
-    $.mStatus.value = project?.status || 'candidatura';
-    $.mSaude.value = project?.saude || 'normal';
-    $.mPrazoData.value = project?.prazo?.data || '';
-    $.mPrazoDesc.value = project?.prazo?.marco || '';
-    $.mVerbaAtribuida.value = project?.financeiro?.atribuido ?? '';
-    $.mVerbaExecutada.value = project?.financeiro?.executado ?? '';
-    $.mFuncionalPct.value = project?.funcional?.percentual ?? '';
-    $.mDesafios.value = project?.desafios || '';
+    $.mNome.value = project?.nome || '';
+    $.mUnidade.value = project?.unidade || '';
+    $.mFicha.value = project?.ficha || '';
+    $.mEstado.value = project?.estado || 'em_execucao';
+    $.mGestor.value = project?.gestor || '';
+    $.mTaxaProjeto.value = project?.taxaProjeto ?? '';
+    $.mTaxaFinanceira.value = project?.taxaFinanceira ?? '';
+    $.mInvestimento.value = project?.investimentoTotal ?? '';
+    $.mDependencias.value = project?.dependencias || '';
+    $.mRiscos.value = project?.riscos || '';
+    $.mProximosPassos.value = project?.proximosPassos || '';
     $.overlay.classList.add('open');
   }
   function closeModal(){ $.overlay.classList.remove('open'); }
@@ -731,25 +400,26 @@
   $.overlay.addEventListener('click', (e) => { if(e.target === $.overlay) closeModal(); });
 
   $.saveProjectBtn.addEventListener('click', async () => {
-    const name = $.mName.value.trim();
-    if(!name){ setStatus('err', 'O nome do projeto é obrigatório.'); return; }
+    const nome = $.mNome.value.trim();
+    if(!nome){ setStatus('err', 'O nome do projeto é obrigatório.'); return; }
+
+    const taxaP = $.mTaxaProjeto.value === '' ? null : Math.min(100, Math.max(0, parseFloat($.mTaxaProjeto.value)));
+    const taxaF = $.mTaxaFinanceira.value === '' ? null : Math.min(100, Math.max(0, parseFloat($.mTaxaFinanceira.value)));
+    const invest = $.mInvestimento.value === '' ? null : parseFloat($.mInvestimento.value);
 
     const record = {
       id: state.editingId || Date.now().toString(36),
-      name,
-      categoria: $.mCategoria.value.trim() || 'Geral',
-      entity: $.mEntity.value.trim(),
-      status: $.mStatus.value,
-      saude: $.mSaude.value,
-      prazo: { data: $.mPrazoData.value, marco: $.mPrazoDesc.value.trim() },
-      financeiro: {
-        atribuido: parseFloat($.mVerbaAtribuida.value) || 0,
-        executado: parseFloat($.mVerbaExecutada.value) || 0
-      },
-      funcional: {
-        percentual: Math.min(100, Math.max(0, parseFloat($.mFuncionalPct.value) || 0))
-      },
-      desafios: $.mDesafios.value.trim(),
+      nome,
+      unidade: $.mUnidade.value.trim(),
+      ficha: $.mFicha.value.trim(),
+      estado: $.mEstado.value,
+      gestor: $.mGestor.value.trim(),
+      taxaProjeto: taxaP,
+      taxaFinanceira: taxaF,
+      investimentoTotal: invest,
+      dependencias: $.mDependencias.value.trim(),
+      riscos: $.mRiscos.value.trim(),
+      proximosPassos: $.mProximosPassos.value.trim(),
       updatedAt: new Date().toISOString()
     };
 
@@ -761,7 +431,7 @@
     render();
     setStatus('', 'A gravar no GitHub...');
     try{
-      await saveToGitHub(`${idx >= 0 ? 'Atualiza' : 'Adiciona'} projeto: ${name}`);
+      await saveToGitHub(`${idx >= 0 ? 'Atualiza' : 'Adiciona'} projeto: ${nome}`);
       setStatus('ok', `${state.owner}/${state.repo} · ${state.path}`);
     } catch(e){
       setStatus('err', 'Erro ao gravar: ' + e.message);
@@ -777,7 +447,7 @@
     const removed = state.projects.splice(idx, 1)[0];
     render();
     try{
-      await saveToGitHub(`Remove projeto: ${removed.name}`);
+      await saveToGitHub(`Remove projeto: ${removed.nome}`);
     } catch(e){
       setStatus('err', 'Erro ao remover: ' + e.message);
       state.projects.splice(idx, 0, removed);
@@ -785,7 +455,6 @@
     }
   }
 
-  // --- Filters ---
   $.filters.addEventListener('click', (e) => {
     const btn = e.target.closest('.chip');
     if(!btn) return;
@@ -795,88 +464,108 @@
     render();
   });
 
-  // --- Rendering ---
   function escapeHtml(str){
     const div = document.createElement('div');
     div.textContent = str || '';
     return div.innerHTML;
   }
 
+  function fmtEuro(v){
+    if(v === null || v === undefined || v === '') return '—';
+    return '€' + Number(v).toLocaleString('pt-PT', { maximumFractionDigits: 0 });
+  }
+
   function renderSummary(list){
-    $.sumTotal.textContent = list.length;
-    $.sumExecucao.textContent = list.filter(p => p.status === 'execucao').length;
-    const withBudget = list.filter(p => p.financeiro.atribuido > 0);
-    const avgFin = withBudget.length
-      ? withBudget.reduce((s,p) => s + (p.financeiro.executado / p.financeiro.atribuido) * 100, 0) / withBudget.length
-      : 0;
-    $.sumFinanceiro.textContent = avgFin.toFixed(0) + '%';
-    $.sumDesafios.textContent = list.filter(p => p.desafios && p.desafios.trim()).length;
+    $.sumExecucao.textContent = list.filter(p => p.estado === 'em_execucao').length;
+    $.sumConcluidos.textContent = list.filter(p => p.estado === 'concluido').length;
+    $.sumAtraso.textContent = list.filter(p => p.estado === 'em_atraso').length;
+
+    const withTaxaP = list.filter(p => typeof p.taxaProjeto === 'number');
+    const avgTaxaP = withTaxaP.length ? withTaxaP.reduce((s,p) => s + p.taxaProjeto, 0) / withTaxaP.length : 0;
+    $.sumTaxaProjeto.textContent = avgTaxaP.toFixed(0) + '%';
+
+    const totalInvest = list.reduce((s,p) => s + (typeof p.investimentoTotal === 'number' ? p.investimentoTotal : 0), 0);
+    $.sumInvestimento.textContent = fmtEuro(totalInvest);
+
+    const withTaxaF = list.filter(p => typeof p.taxaFinanceira === 'number');
+    const avgTaxaF = withTaxaF.length ? withTaxaF.reduce((s,p) => s + p.taxaFinanceira, 0) / withTaxaF.length : 0;
+    $.sumTaxaFin.textContent = avgTaxaF.toFixed(0) + '%';
   }
 
   function cardHtml(p){
-    const saude = p.saude || 'normal';
-    const funPct = p.funcional?.percentual || 0;
-    const atribuido = p.financeiro?.atribuido || 0;
+    const color = ESTADO_COLOR[p.estado] || 'normal';
+    const taxaP = typeof p.taxaProjeto === 'number' ? p.taxaProjeto : null;
+    const taxaF = typeof p.taxaFinanceira === 'number' ? p.taxaFinanceira : null;
 
     return `
       <div class="card">
-        <div class="card-bar ${saude}"></div>
-        <div class="card-left">
-          <div>
-            <div class="card-left-top">
-              <span class="dot ${saude}"></span>
-              <div>
-                <h3>${escapeHtml(p.name)}</h3>
-                ${p.entity ? `<div class="entity">${escapeHtml(p.entity)}</div>` : ''}
-              </div>
+        <div class="card-bar ${color}"></div>
+        <div class="card-inner">
+          <div class="card-top">
+            <div>
+              <div class="meta">${escapeHtml(p.unidade || '—')}${p.ficha ? ' · Ficha ' + escapeHtml(p.ficha) : ''}</div>
+              <h3>${escapeHtml(p.nome)}</h3>
+            </div>
+            <span class="badge ${color}">${ESTADO_LABEL[p.estado] || p.estado}</span>
+          </div>
+
+          <div class="metrics-row">
+            <div>
+              <div class="metric-head"><span>Execução do projeto</span><span class="val ${color}">${taxaP !== null ? taxaP + '%' : '—'}</span></div>
+              <div class="bar"><div class="bar-fill ${color}" style="width:${taxaP || 0}%"></div></div>
+            </div>
+            <div>
+              <div class="metric-head"><span>Execução financeira</span><span class="val ${color}">${taxaF !== null ? taxaF + '%' : '—'}</span></div>
+              <div class="bar"><div class="bar-fill ${color}" style="width:${taxaF || 0}%"></div></div>
             </div>
           </div>
-          <div>
-            <div class="pct-row"><span class="pct ${saude}">${funPct}%</span></div>
-            <div class="bar"><div class="bar-fill ${saude}" style="width:${funPct}%"></div></div>
+
+          <div class="investimento"><span class="label">Investimento total</span>${fmtEuro(p.investimentoTotal)}</div>
+
+          <div class="riscos-box ${color}">
+            <div class="label">Riscos</div>
+            <div class="txt ${p.riscos ? '' : 'empty'}">${p.riscos ? escapeHtml(p.riscos) : 'Sem riscos registados.'}</div>
           </div>
-          <div>
-            <div class="budget">${atribuido ? '€' + Number(atribuido).toLocaleString('pt-PT') : '—'}</div>
-            <div class="card-actions">
-              <button class="edit" data-id="${p.id}">editar</button>
-              <button class="del" data-id="${p.id}">remover</button>
-            </div>
+
+          ${p.dependencias ? `<div class="detail-row"><b>Dependências:</b> <span class="txt">${escapeHtml(p.dependencias)}</span></div>` : ''}
+          ${p.proximosPassos ? `<div class="detail-row"><b>Próximos passos:</b> <span class="txt">${escapeHtml(p.proximosPassos)}</span></div>` : ''}
+          ${p.gestor ? `<div class="detail-row"><b>Gestor de projeto:</b> ${escapeHtml(p.gestor)}</div>` : ''}
+
+          <div class="card-actions">
+            <button class="edit" data-id="${p.id}">editar</button>
+            <button class="del" data-id="${p.id}">remover</button>
           </div>
-        </div>
-        <div class="card-right ${saude}">
-          <div class="label">Informação</div>
-          <div class="situacao ${p.desafios ? '' : 'empty'}">${p.desafios ? escapeHtml(p.desafios) : 'Sem situação registada.'}</div>
-          ${p.prazo?.data || p.prazo?.marco ? `<div class="prazo">Próximo marco: <span class="val">${p.prazo.data || '—'}</span>${p.prazo.marco ? ' · ' + escapeHtml(p.prazo.marco) : ''}</div>` : ''}
         </div>
       </div>
     `;
   }
 
   function render(){
-    const list = state.projects.filter(p => state.filter === 'todos' || p.status === state.filter);
+    const list = state.projects.filter(p => state.filter === 'todos' || p.estado === state.filter);
     renderSummary(state.projects);
 
+    if(state.projects.length){
+      const latest = state.projects.reduce((max, p) => (p.updatedAt || '') > max ? p.updatedAt : max, '');
+      $.updatedLabel.textContent = latest ? 'Última atualização: ' + new Date(latest).toLocaleDateString('pt-PT') : '';
+    }
+
     if(list.length === 0){
-      $.groupsContainer.innerHTML = `<div class="empty-state">
-        ${state.connected ? 'Sem projetos nesta vista.' : 'Liga ao GitHub para carregar ou criar projetos.'}
-      </div>`;
+      $.groupsContainer.innerHTML = `<div class="empty-state">${state.connected ? 'Sem projetos nesta vista.' : 'Liga ao GitHub para carregar ou criar projetos.'}</div>`;
       return;
     }
 
     const groups = {};
     list.forEach(p => {
-      const cat = p.categoria || 'Geral';
-      if(!groups[cat]) groups[cat] = [];
-      groups[cat].push(p);
+      const key = p.unidade || 'Sem unidade';
+      if(!groups[key]) groups[key] = [];
+      groups[key].push(p);
     });
 
-    $.groupsContainer.innerHTML = Object.keys(groups).sort().map(cat => `
+    $.groupsContainer.innerHTML = Object.keys(groups).sort().map(key => `
       <div class="category-group">
-        <div class="category-title">${escapeHtml(cat)}</div>
+        <div class="category-title">${escapeHtml(key)}</div>
         <div class="grid">
-          ${groups[cat]
-            .sort((a,b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
-            .map(cardHtml).join('')}
+          ${groups[key].sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||'')).map(cardHtml).join('')}
         </div>
       </div>
     `).join('');

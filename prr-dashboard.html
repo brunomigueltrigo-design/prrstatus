@@ -47,7 +47,7 @@
   h1{ font-weight: 800; font-size: 30px; margin: 0 0 4px; letter-spacing: -0.02em; }
   .lede{ color: var(--ink-soft); font-size: 13.5px; margin: 0; font-weight: 600; }
 
-  .toolbar{ display:flex; align-items:center; gap: 12px; }
+  .toolbar{ display:flex; align-items:center; gap: 12px; flex-wrap: wrap; }
   .toolbar button{
     background: var(--ink); color: #fff; border: none; border-radius: 7px;
     font-family: 'Overpass', sans-serif; font-weight: 700; font-size: 12.5px;
@@ -192,6 +192,9 @@
       <p class="lede">Acompanhamento de projetos — estado, execução, investimento, dependências e riscos.</p>
     </div>
     <div class="toolbar">
+      <button id="githubBtn">Ligar ao GitHub</button>
+      <button id="importExcelBtn">Importar Excel</button>
+      <input type="file" id="importExcelInput" accept=".xlsx,.xls" style="display:none">
       <button id="exportPptxBtn">Exportar PowerPoint</button>
     </div>
   </header>
@@ -249,7 +252,29 @@
   </div>
 </div>
 
+<div class="overlay" id="githubOverlay">
+  <div class="modal">
+    <h2>Ligar ao GitHub</h2>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 16px;line-height:1.5;">
+      Os dados passam a ser guardados no ficheiro <code>projects.json</code> do repositório indicado, com histórico de commits. É necessário um <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">token de acesso (fine-grained)</a> com permissão "Contents: Read and write" restrita a esse repositório. O token fica guardado apenas neste browser (localStorage) — nunca é enviado para mais lado nenhum além do GitHub.
+    </p>
+    <div class="form-grid">
+      <div><label for="ghOwner">Utilizador/Organização</label><input id="ghOwner" placeholder="ex: brunomigueltrigo-design"></div>
+      <div><label for="ghRepo">Repositório</label><input id="ghRepo" placeholder="ex: prrstatus"></div>
+      <div><label for="ghPath">Ficheiro de dados</label><input id="ghPath" placeholder="projects.json" value="projects.json"></div>
+      <div><label for="ghBranch">Branch</label><input id="ghBranch" placeholder="main" value="main"></div>
+      <div class="full"><label for="ghToken">Token de acesso</label><input id="ghToken" type="password" placeholder="github_pat_..."></div>
+    </div>
+    <div class="modal-actions">
+      <button id="ghSaveBtn">Ligar</button>
+      <button class="secondary" id="ghDisconnectBtn">Desligar</button>
+      <button class="secondary" id="ghCancelBtn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
   const DEFAULT_PROJECTS = [
@@ -407,6 +432,10 @@
     saveProjectBtn: el('saveProjectBtn'), cancelModal: el('cancelModal'),
     sumExecucao: el('sumExecucao'), sumConcluidos: el('sumConcluidos'), sumAtraso: el('sumAtraso'),
     sumTaxaProjeto: el('sumTaxaProjeto'), sumInvestimento: el('sumInvestimento'), sumTaxaFin: el('sumTaxaFin'),
+    githubBtn: el('githubBtn'), githubOverlay: el('githubOverlay'),
+    ghOwner: el('ghOwner'), ghRepo: el('ghRepo'), ghPath: el('ghPath'), ghBranch: el('ghBranch'), ghToken: el('ghToken'),
+    ghSaveBtn: el('ghSaveBtn'), ghDisconnectBtn: el('ghDisconnectBtn'), ghCancelBtn: el('ghCancelBtn'),
+    importExcelBtn: el('importExcelBtn'), importExcelInput: el('importExcelInput'),
   };
 
   const ESTADO_LABEL = { em_atraso:'Em atraso', em_execucao:'Em execução', por_iniciar:'Por iniciar', concluido:'Concluído' };
@@ -439,7 +468,7 @@
   $.cancelModal.addEventListener('click', closeModal);
   $.overlay.addEventListener('click', (e) => { if(e.target === $.overlay) closeModal(); });
 
-  $.saveProjectBtn.addEventListener('click', () => {
+  $.saveProjectBtn.addEventListener('click', async () => {
     const nome = $.mNome.value.trim();
     if(!nome){ setStatus('err', 'O nome do projeto é obrigatório.'); return; }
 
@@ -468,17 +497,264 @@
 
     closeModal();
     render();
-    setStatus('', 'Guardado nesta sessão do browser (esta página não sincroniza com nenhum ficheiro externo).');
+    await persist();
   });
 
-  function deleteProject(id){
+  async function deleteProject(id){
     const idx = state.projects.findIndex(p => p.id === id);
     if(idx === -1) return;
-    if(!confirm('Remover este projeto desta sessão?')) return;
+    if(!confirm('Remover este projeto?')) return;
     state.projects.splice(idx, 1);
     render();
-    setStatus('', 'Removido nesta sessão do browser.');
+    await persist();
   }
+
+  // --- Persistência via GitHub (ficheiro projects.json, com histórico de commits) ---
+  const GH_STORAGE_KEY = 'prrGithubConfig';
+  const github = { owner:'', repo:'', path:'projects.json', branch:'main', token:'', sha:null, connected:false };
+
+  function loadGithubConfig(){
+    try{
+      const raw = localStorage.getItem(GH_STORAGE_KEY);
+      if(!raw) return;
+      Object.assign(github, JSON.parse(raw), { connected: true, sha: null });
+    } catch(e){ /* localStorage indisponível ou dados corrompidos */ }
+  }
+  function saveGithubConfig(){
+    try{
+      localStorage.setItem(GH_STORAGE_KEY, JSON.stringify({
+        owner: github.owner, repo: github.repo, path: github.path, branch: github.branch, token: github.token
+      }));
+    } catch(e){ /* localStorage indisponível (ex: modo privado) */ }
+  }
+  function clearGithubConfig(){
+    try{ localStorage.removeItem(GH_STORAGE_KEY); } catch(e){}
+    Object.assign(github, { owner:'', repo:'', path:'projects.json', branch:'main', token:'', sha:null, connected:false });
+  }
+
+  function b64EncodeUnicode(str){
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));
+  }
+  function b64DecodeUnicode(str){
+    return decodeURIComponent(atob(str.replace(/\n/g, '')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+  }
+  function ghApiUrl(){
+    return `https://api.github.com/repos/${encodeURIComponent(github.owner)}/${encodeURIComponent(github.repo)}/contents/${github.path.split('/').map(encodeURIComponent).join('/')}`;
+  }
+  function ghHeaders(){
+    return { Authorization: 'Bearer ' + github.token, Accept: 'application/vnd.github+json' };
+  }
+  function updateGithubBtn(){
+    $.githubBtn.textContent = github.connected ? `GitHub: ${github.owner}/${github.repo}` : 'Ligar ao GitHub';
+  }
+
+  async function githubLoad(){
+    if(!github.connected) return false;
+    setStatus('', 'A carregar dados do GitHub...');
+    try{
+      const res = await fetch(ghApiUrl() + '?ref=' + encodeURIComponent(github.branch), { headers: ghHeaders() });
+      if(res.status === 404){
+        github.sha = null;
+        setStatus('', `Ficheiro ${github.path} ainda não existe em ${github.owner}/${github.repo} — será criado ao guardar a primeira alteração.`);
+        return false;
+      }
+      if(!res.ok) throw new Error(`GitHub respondeu ${res.status}`);
+      const data = await res.json();
+      github.sha = data.sha;
+      const json = JSON.parse(b64DecodeUnicode(data.content));
+      state.projects = Array.isArray(json) ? json : (json.projects || []);
+      render();
+      setStatus('', `Dados carregados de ${github.owner}/${github.repo} (${github.path}).`);
+      return true;
+    } catch(e){
+      setStatus('err', 'Erro ao carregar do GitHub: ' + e.message);
+      return false;
+    }
+  }
+
+  async function githubSave(){
+    if(!github.connected) return false;
+    setStatus('', 'A guardar no GitHub...');
+    try{
+      const body = {
+        message: 'Atualiza projects.json via Painel PRR',
+        content: b64EncodeUnicode(JSON.stringify({ projects: state.projects }, null, 2)),
+        branch: github.branch,
+      };
+      if(github.sha) body.sha = github.sha;
+      const res = await fetch(ghApiUrl(), {
+        method: 'PUT',
+        headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if(res.status === 409){
+        setStatus('err', 'Alguém alterou o ficheiro entretanto. Recarrega a página para obteres a versão mais recente antes de guardar.');
+        return false;
+      }
+      if(!res.ok){
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.message || `GitHub respondeu ${res.status}`);
+      }
+      const data = await res.json();
+      github.sha = data.content.sha;
+      setStatus('', `Guardado em ${github.owner}/${github.repo} (${github.path}).`);
+      return true;
+    } catch(e){
+      setStatus('err', 'Erro ao guardar no GitHub: ' + e.message);
+      return false;
+    }
+  }
+
+  async function persist(){
+    if(github.connected) await githubSave();
+    else setStatus('', 'Guardado nesta sessão do browser (liga ao GitHub para persistir entre sessões — botão "Ligar ao GitHub").');
+  }
+
+  $.githubBtn.addEventListener('click', () => {
+    $.ghOwner.value = github.owner;
+    $.ghRepo.value = github.repo;
+    $.ghPath.value = github.path || 'projects.json';
+    $.ghBranch.value = github.branch || 'main';
+    $.ghToken.value = github.token;
+    $.ghDisconnectBtn.style.display = github.connected ? '' : 'none';
+    $.githubOverlay.classList.add('open');
+  });
+  $.ghCancelBtn.addEventListener('click', () => $.githubOverlay.classList.remove('open'));
+  $.githubOverlay.addEventListener('click', (e) => { if(e.target === $.githubOverlay) $.githubOverlay.classList.remove('open'); });
+  $.ghDisconnectBtn.addEventListener('click', () => {
+    if(!confirm('Desligar do GitHub? Os dados passam a ficar só nesta sessão do browser.')) return;
+    clearGithubConfig();
+    updateGithubBtn();
+    $.githubOverlay.classList.remove('open');
+    setStatus('', 'Desligado do GitHub.');
+  });
+  $.ghSaveBtn.addEventListener('click', async () => {
+    const owner = $.ghOwner.value.trim();
+    const repo = $.ghRepo.value.trim();
+    const path = $.ghPath.value.trim() || 'projects.json';
+    const branch = $.ghBranch.value.trim() || 'main';
+    const token = $.ghToken.value.trim();
+    if(!owner || !repo || !token){ setStatus('err', 'Preenche utilizador, repositório e token.'); return; }
+    Object.assign(github, { owner, repo, path, branch, token, connected: true, sha: null });
+    saveGithubConfig();
+    updateGithubBtn();
+    $.githubOverlay.classList.remove('open');
+    await githubLoad();
+  });
+
+  // --- Importação de Excel (formato "Ponto de Situação Projeto PRR") ---
+  function normalizeKey(str){
+    return (str || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+  function normalizeEstado(str){
+    const n = normalizeKey(str);
+    if(n.includes('atraso')) return 'em_atraso';
+    if(n.includes('conclu')) return 'concluido';
+    if(n.includes('iniciar') || n.includes('inciar')) return 'por_iniciar';
+    if(n.includes('execu')) return 'em_execucao';
+    return 'em_execucao';
+  }
+  function slugify(str){
+    return normalizeKey(str).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'projeto';
+  }
+  function toPercent(v){
+    if(v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    if(isNaN(n)) return null;
+    return Math.round(n <= 1 ? n * 100 : n);
+  }
+  function toNumber(v){
+    if(v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
+  }
+
+  const EXCEL_FIELD_MATCHERS = [
+    { field: 'unidade', test: k => k === 'unidade' },
+    { field: 'ficha', test: k => k.includes('ficha') },
+    { field: 'nome', test: k => k.includes('nome') },
+    { field: 'estado', test: k => k === 'estado' },
+    { field: 'taxaProjeto', test: k => k.includes('taxa') && k.includes('execu') && k.includes('projeto') },
+    { field: 'investimentoTotal', test: k => k.includes('investimento') },
+    { field: 'taxaFinanceira', test: k => k.includes('taxa') && k.includes('financeira') },
+    { field: 'dependencias', test: k => k.includes('dependenc') },
+    { field: 'riscos', test: k => k.includes('risco') },
+    { field: 'proximosPassos', test: k => k.includes('proximos') && k.includes('passos') },
+    { field: 'gestor', test: k => k.includes('gestor') },
+  ];
+
+  function parseProjectsSheet(rows){
+    let headerRowIdx = -1, colMap = {};
+    for(let r = 0; r < rows.length; r++){
+      const row = rows[r] || [];
+      const map = {};
+      row.forEach((cell, c) => {
+        const key = normalizeKey(cell);
+        if(!key) return;
+        const match = EXCEL_FIELD_MATCHERS.find(m => m.test(key));
+        if(match) map[match.field] = c;
+      });
+      if(map.nome !== undefined && map.estado !== undefined){
+        headerRowIdx = r; colMap = map; break;
+      }
+    }
+    if(headerRowIdx === -1) throw new Error('Não encontrei a linha de cabeçalhos (ex: "Nome do Projetos", "Estado") na folha.');
+
+    const usedIds = new Set();
+    const projects = [];
+    for(let r = headerRowIdx + 1; r < rows.length; r++){
+      const row = rows[r] || [];
+      const nome = colMap.nome !== undefined ? (row[colMap.nome] || '').toString().trim() : '';
+      if(!nome) continue;
+      const base = slugify(nome);
+      let uniqueId = base, i = 2;
+      while(usedIds.has(uniqueId)) uniqueId = `${base}-${i++}`;
+      usedIds.add(uniqueId);
+
+      projects.push({
+        id: uniqueId,
+        nome,
+        unidade: colMap.unidade !== undefined ? (row[colMap.unidade] || '').toString().trim() : '',
+        ficha: colMap.ficha !== undefined ? (row[colMap.ficha] || '').toString().trim() : '',
+        estado: colMap.estado !== undefined ? normalizeEstado(row[colMap.estado]) : 'em_execucao',
+        gestor: colMap.gestor !== undefined ? (row[colMap.gestor] || '').toString().trim() : '',
+        taxaProjeto: colMap.taxaProjeto !== undefined ? toPercent(row[colMap.taxaProjeto]) : null,
+        taxaFinanceira: colMap.taxaFinanceira !== undefined ? toPercent(row[colMap.taxaFinanceira]) : null,
+        investimentoTotal: colMap.investimentoTotal !== undefined ? toNumber(row[colMap.investimentoTotal]) : null,
+        dependencias: colMap.dependencias !== undefined ? (row[colMap.dependencias] || '').toString().trim() : '',
+        riscos: colMap.riscos !== undefined ? (row[colMap.riscos] || '').toString().trim() : '',
+        proximosPassos: colMap.proximosPassos !== undefined ? (row[colMap.proximosPassos] || '').toString().trim() : '',
+        updatedAt: new Date().toISOString(),
+      });
+    }
+    return projects;
+  }
+
+  $.importExcelBtn.addEventListener('click', () => $.importExcelInput.click());
+  $.importExcelInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if(!file) return;
+    if(typeof XLSX === 'undefined'){
+      setStatus('err', 'A biblioteca de importação não carregou. Verifica a ligação à internet e tenta de novo.');
+      return;
+    }
+    try{
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const sheetName = wb.SheetNames.includes('PDS PRR') ? 'PDS PRR' : wb.SheetNames[0];
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: '' });
+      const imported = parseProjectsSheet(rows);
+      if(!imported.length){ setStatus('err', 'Não encontrei projetos para importar neste ficheiro.'); return; }
+      if(!confirm(`Importar ${imported.length} projeto(s) deste Excel? Isto substitui todos os projetos atuais.`)) return;
+      state.projects = imported;
+      render();
+      await persist();
+      setStatus('', `${imported.length} projeto(s) importado(s) do Excel.`);
+    } catch(err){
+      setStatus('err', 'Erro ao importar Excel: ' + err.message);
+    }
+  });
 
   $.filters.addEventListener('click', (e) => {
     const btn = e.target.closest('.chip');
@@ -769,7 +1045,10 @@
 
   $.exportPptxBtn.addEventListener('click', exportPptx);
 
+  loadGithubConfig();
+  updateGithubBtn();
   render();
+  if(github.connected) githubLoad();
 })();
 </script>
 

@@ -246,6 +246,7 @@
 
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 (function(){
   const DEFAULT_PROJECTS = [
@@ -464,98 +465,97 @@
 
     closeModal();
     render();
-    await persist();
+    await dbSaveProject(record);
   });
 
-  // --- Persistência via GitHub (ficheiro projects.json, com histórico de commits) ---
-  // Repositório de destino e token fixos no código: a página liga-se sozinha, sem
-  // nenhum passo manual. AVISO: como o GitHub Pages costuma ser publicamente
-  // acessível mesmo vindo de um repositório privado, este token fica visível a
-  // qualquer pessoa com o link da página (código-fonte) e tem de estar restrito,
-  // por token fine-grained, só a este repositório com permissão "Contents: Read
-  // and write" — nunca uses aqui um token com mais permissões do que isso.
-  const GITHUB_CONFIG = { owner: 'brunomigueltrigo-design', repo: 'prrstatus', path: 'projects.json', branch: 'main' };
-  const GITHUB_TOKEN = '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';
+  // --- Persistência via Supabase (base de dados Postgres gratuita) ---
+  // URL e chave "anon" fixas no código: ao contrário de um token do GitHub, isto é
+  // seguro por design — a chave anon é para ficar pública, a segurança vem das
+  // políticas de Row Level Security configuradas na tabela (ver README-prr.md).
+  // Sem login: qualquer pessoa com o link da página pode ler e escrever dados.
+  const SUPABASE_URL = 'https://yqsyqixmcukhdunybpyw.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_Ckl-qk8aiwAqqkfcxZD7tg_oK4EY_Um';
+  const SUPABASE_CONFIGURED = SUPABASE_URL !== 'COLOCAR_SUPABASE_URL_AQUI' && SUPABASE_ANON_KEY !== 'COLOCAR_SUPABASE_ANON_KEY_AQUI';
 
-  const github = { ...GITHUB_CONFIG, token: GITHUB_TOKEN, sha: null, connected: GITHUB_TOKEN !== 'COLOCAR_TOKEN_AQUI' };
+  const sb = (SUPABASE_CONFIGURED && typeof supabase !== 'undefined')
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
 
-  function b64EncodeUnicode(str){
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));
+  function rowToProject(row){
+    return {
+      id: row.id, nome: row.nome, unidade: row.unidade || '', ficha: row.ficha || '',
+      estado: row.estado, gestor: row.gestor || '',
+      taxaProjeto: row.taxa_projeto, taxaFinanceira: row.taxa_financeira, investimentoTotal: row.investimento_total,
+      dependencias: row.dependencias || '', riscos: row.riscos || '', proximosPassos: row.proximos_passos || '',
+      updatedAt: row.updated_at,
+    };
   }
-  function b64DecodeUnicode(str){
-    return decodeURIComponent(atob(str.replace(/\n/g, '')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+  function projectToRow(p){
+    return {
+      id: p.id, nome: p.nome, unidade: p.unidade || null, ficha: p.ficha || null,
+      estado: p.estado, gestor: p.gestor || null,
+      taxa_projeto: p.taxaProjeto, taxa_financeira: p.taxaFinanceira, investimento_total: p.investimentoTotal,
+      dependencias: p.dependencias || null, riscos: p.riscos || null, proximos_passos: p.proximosPassos || null,
+      updated_at: p.updatedAt,
+    };
   }
-  function ghApiUrl(){
-    return `https://api.github.com/repos/${encodeURIComponent(github.owner)}/${encodeURIComponent(github.repo)}/contents/${github.path.split('/').map(encodeURIComponent).join('/')}`;
-  }
-  function ghHeaders(){
-    return { Authorization: 'Bearer ' + github.token, Accept: 'application/vnd.github+json' };
-  }
-  async function githubLoad(){
-    if(!github.connected){
-      setStatus('err', 'GITHUB_TOKEN não configurado no código — as alterações não vão ser guardadas. Vê o README-prr.md.');
+
+  function dbReady(){
+    if(!SUPABASE_CONFIGURED){
+      setStatus('err', 'Supabase não configurado no código — as alterações não vão ser guardadas. Vê o README-prr.md.');
       return false;
     }
-    setStatus('', 'A carregar dados do GitHub...');
+    if(!sb){
+      setStatus('err', 'A biblioteca do Supabase não carregou — verifica a ligação à internet e tenta recarregar a página.');
+      return false;
+    }
+    return true;
+  }
+
+  async function dbLoad(){
+    if(!dbReady()) return false;
+    setStatus('', 'A carregar dados...');
     try{
-      const res = await fetch(ghApiUrl() + '?ref=' + encodeURIComponent(github.branch), { headers: ghHeaders() });
-      if(res.status === 404){
-        github.sha = null;
-        setStatus('', `Ficheiro ${github.path} ainda não existe em ${github.owner}/${github.repo} — será criado ao guardar a primeira alteração.`);
-        return false;
-      }
-      if(!res.ok) throw new Error(`GitHub respondeu ${res.status}`);
-      const data = await res.json();
-      github.sha = data.sha;
-      const json = JSON.parse(b64DecodeUnicode(data.content));
-      state.projects = Array.isArray(json) ? json : (json.projects || []);
+      const { data, error } = await sb.from('projects').select('*').order('updated_at', { ascending: false });
+      if(error) throw new Error(error.message);
+      state.projects = data.map(rowToProject);
       render();
-      setStatus('', `Dados carregados de ${github.owner}/${github.repo} (${github.path}).`);
+      setStatus('', 'Dados carregados.');
       return true;
     } catch(e){
-      setStatus('err', 'Erro ao carregar do GitHub: ' + e.message);
+      setStatus('err', 'Erro ao carregar dados: ' + e.message);
       return false;
     }
   }
 
-  async function githubSave(){
-    if(!github.connected){
-      setStatus('err', 'GITHUB_TOKEN não configurado no código — as alterações não vão ser guardadas. Vê o README-prr.md.');
-      return false;
-    }
-    setStatus('', 'A guardar no GitHub...');
+  async function dbSaveProject(project){
+    if(!dbReady()) return false;
+    setStatus('', 'A guardar...');
     try{
-      const body = {
-        message: 'Atualiza projects.json via Painel PRR',
-        content: b64EncodeUnicode(JSON.stringify({ projects: state.projects }, null, 2)),
-        branch: github.branch,
-      };
-      if(github.sha) body.sha = github.sha;
-      const res = await fetch(ghApiUrl(), {
-        method: 'PUT',
-        headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      if(res.status === 409){
-        setStatus('err', 'Alguém alterou o ficheiro entretanto. Recarrega a página para obteres a versão mais recente antes de guardar.');
-        return false;
-      }
-      if(!res.ok){
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.message || `GitHub respondeu ${res.status}`);
-      }
-      const data = await res.json();
-      github.sha = data.content.sha;
-      setStatus('', `Guardado em ${github.owner}/${github.repo} (${github.path}).`);
+      const { error } = await sb.from('projects').upsert(projectToRow(project));
+      if(error) throw new Error(error.message);
+      setStatus('', 'Guardado.');
       return true;
     } catch(e){
-      setStatus('err', 'Erro ao guardar no GitHub: ' + e.message);
+      setStatus('err', 'Erro ao guardar: ' + e.message);
       return false;
     }
   }
 
-  async function persist(){
-    await githubSave();
+  async function dbReplaceAll(projects){
+    if(!dbReady()) return false;
+    setStatus('', 'A guardar...');
+    try{
+      const { error: delErr } = await sb.from('projects').delete().not('id', 'is', null);
+      if(delErr) throw new Error(delErr.message);
+      const { error: insErr } = await sb.from('projects').insert(projects.map(projectToRow));
+      if(insErr) throw new Error(insErr.message);
+      setStatus('', 'Guardado.');
+      return true;
+    } catch(e){
+      setStatus('err', 'Erro ao guardar: ' + e.message);
+      return false;
+    }
   }
 
   // --- Importação de Excel (formato "Ponto de Situação Projeto PRR") ---
@@ -665,7 +665,7 @@
       if(!confirm(`Importar ${imported.length} projeto(s) deste Excel? Isto substitui todos os projetos atuais.`)) return;
       state.projects = imported;
       render();
-      await persist();
+      await dbReplaceAll(imported);
       setStatus('', `${imported.length} projeto(s) importado(s) do Excel.`);
     } catch(err){
       setStatus('err', 'Erro ao importar Excel: ' + err.message);
@@ -958,7 +958,7 @@
   $.exportPptxBtn.addEventListener('click', exportPptx);
 
   render();
-  githubLoad();
+  dbLoad();
 })();
 </script>
 

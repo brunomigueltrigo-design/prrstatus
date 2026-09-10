@@ -6,23 +6,56 @@ Link público: `https://brunomigueltrigo-design.github.io/prrstatus/prr-dashboar
 
 ## Persistência dos dados
 
-O painel liga-se sozinho ao repositório e guarda os dados no ficheiro `projects.json`, usando a API do GitHub — sem qualquer backend ou base de dados externa, e **sem nenhum passo manual**: não há botão para ligar, o repositório de destino e o token de acesso estão ambos fixos no código (`GITHUB_CONFIG` e `GITHUB_TOKEN`, no `prr-dashboard.html`).
+O painel guarda os dados numa base de dados **Supabase** (Postgres gratuito) — sem backend próprio, sem servidor a manter, e **sem nenhum passo manual para quem usa a página**: não há login nem botão para ligar. Qualquer gestor de projeto abre o link e já pode editar.
 
-### ⚠️ Isto expõe o token a quem tiver o link da página
+Já tentámos duas abordagens antes desta:
+- **Ficheiro `projects.json` no GitHub, com um token pessoal embutido no código.** Funcionava para um único utilizador, mas não fazia sentido para vários gestores de projeto (implicava dar a cada um um token com acesso de escrita ao repositório inteiro) — e, na prática, o GitHub **revoga automaticamente tokens que deteta expostos em código publicado**, o que tornou a solução inviável mesmo para um único utilizador.
+- Antes disso, um ecrã "Ligar ao GitHub" onde cada pessoa colava o seu próprio token — resolvia a exposição, mas continuava a exigir que cada gestor de projeto criasse e gerisse um token do GitHub, o que não é razoável pedir a quem só quer atualizar o estado de um projeto.
 
-Como o GitHub Pages costuma ser publicamente acessível mesmo vindo de um repositório privado, **qualquer pessoa com o link da página consegue ver este token no código-fonte** (Ctrl+U / "Ver código-fonte da página") e usá-lo para escrever no repositório. Esta troca foi feita conscientemente, para não haver nenhum ecrã de ligação — mas implica cuidados:
+O Supabase resolve isto de forma diferente: a chave usada no código (`SUPABASE_ANON_KEY`) **é suposto ficar pública** — ao contrário de um token do GitHub, não dá acesso de escrita por si só. A segurança fica do lado da base de dados, através de regras de **Row Level Security (RLS)**.
 
-- O token tem de ser um **fine-grained PAT restrito só a este repositório** (`prrstatus`), com a permissão mínima **"Contents: Read and write"** — nunca um token com acesso a outros repositórios ou à conta toda.
-- Considera dar-lhe uma **expiração curta** (ex: 90 dias) e voltar a gerar um novo quando expirar (basta substituir o valor de `GITHUB_TOKEN` no código).
-- Se o link da página alguma vez for partilhado com alguém que não deva poder editar os dados, **revoga o token imediatamente** em [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) — isso corta o acesso de escrita sem precisares de mudar mais nada.
+### ⚠️ Sem login, qualquer pessoa com o link pode editar (e apagar) dados
 
-### Como configurar o token (uma vez)
+Como não há autenticação de utilizadores, a política de RLS usada aqui (ver SQL abaixo) permite leitura e escrita públicas — **qualquer pessoa com o link da página consegue alterar ou apagar projetos**, não só os gestores. Se isto alguma vez deixar de ser aceitável (ex: o link for partilhado mais largamente), a evolução natural é adicionar autenticação do Supabase (ex: magic link por email) e restringir as políticas de RLS a utilizadores autenticados — não é algo que esteja implementado agora, mas o Supabase suporta isso sem mudar de base de dados.
 
-1. Cria um token fine-grained em [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) → "Generate new token" → "Repository access" restrito a `prrstatus` → em "Permissions", `Contents: Read and write`.
-2. No `prr-dashboard.html`, procura a linha `const GITHUB_TOKEN = 'COLOCAR_TOKEN_AQUI';` e substitui `'COLOCAR_TOKEN_AQUI'` pelo token gerado.
-3. Faz commit e push dessa alteração (ou pede para eu o fazer, colando-me o token diretamente).
+### Como configurar (uma vez)
 
-Enquanto o `GITHUB_TOKEN` não estiver preenchido, o painel mostra um aviso no topo e as edições ficam só em memória do browser (perdem-se ao recarregar).
+1. Cria uma conta gratuita em [supabase.com](https://supabase.com) e um novo projeto (região à tua escolha, password da BD à tua escolha — não é usada pelo painel).
+2. No projeto, abre **SQL Editor** e corre:
+   ```sql
+   create table projects (
+     id text primary key,
+     nome text not null,
+     unidade text,
+     ficha text,
+     estado text not null default 'em_execucao',
+     gestor text,
+     taxa_projeto numeric,
+     taxa_financeira numeric,
+     investimento_total numeric,
+     dependencias text,
+     riscos text,
+     proximos_passos text,
+     updated_at timestamptz not null default now()
+   );
+
+   alter table projects enable row level security;
+
+   create policy "Leitura pública" on projects for select using (true);
+   create policy "Escrita pública" on projects for insert with check (true);
+   create policy "Atualização pública" on projects for update using (true);
+   create policy "Remoção pública" on projects for delete using (true);
+   ```
+3. Vai a **Project Settings → API** e copia o **Project URL** e a chave **`anon` `public`**.
+4. No `prr-dashboard.html`, procura estas duas linhas e substitui pelos valores copiados:
+   ```js
+   const SUPABASE_URL = 'COLOCAR_SUPABASE_URL_AQUI';
+   const SUPABASE_ANON_KEY = 'COLOCAR_SUPABASE_ANON_KEY_AQUI';
+   ```
+5. Faz commit e push dessa alteração (ou pede para eu o fazer, colando-me os dois valores diretamente — ao contrário do token do GitHub, não há problema nenhum em estes ficarem no código nem no histórico do git).
+6. Usa o botão **"Importar Excel"** uma vez para semear a tabela com os projetos atuais.
+
+Enquanto `SUPABASE_URL`/`SUPABASE_ANON_KEY` não estiverem preenchidos, o painel mostra um aviso no topo e as edições ficam só em memória do browser (perdem-se ao recarregar).
 
 ## Fluxo de trabalho: importar uma vez, depois só atualizar
 
@@ -31,7 +64,7 @@ O painel é **de atualização, não de criação**: não há botão para criar 
 1. **Carregar os dados** — botão **"Importar Excel"**, que lê um ficheiro no formato "Ponto de Situação Projeto PRR" (folha `PDS PRR`, com cabeçalhos como "Unidade", "N. Ficha Projecto", "Nome do Projetos", "Estado", "Taxa de execução projeto", "Investimento total", "Taxa de execução financeira", "Dependências", "Riscos", "Próximos Passos", "Gestor de Projeto") e substitui todos os projetos atuais pelos do ficheiro.
    - As taxas podem vir em fração (`0.7`) ou já em percentagem (`70`) — o painel deteta automaticamente.
    - O campo "Estado" aceita as variações do Excel de origem ("em atraso", "em execução", "por iniciar"/"por inciar", "concluído") e mapeia para os quatro estados do painel.
-   - Se o `GITHUB_TOKEN` estiver configurado, a importação é logo gravada como commit; caso contrário fica só na sessão.
+   - Se o Supabase estiver configurado, a importação é logo gravada na base de dados; caso contrário fica só na sessão.
    - A operação pede confirmação antes de substituir os dados, porque é destrutiva — usa-se tipicamente uma vez, para semear ou repor a lista completa (ex: no início de um novo período de reporte).
 2. **Atualizar no dia a dia** — botão "editar" em cada cartão. Não é preciso voltar a importar Excel para mudar o estado, as taxas ou os riscos de um projeto existente.
 
@@ -44,4 +77,4 @@ O painel é **de atualização, não de criação**: não há botão para criar 
 
 ## Nota de segurança
 
-`projects.json` guarda tudo em texto simples neste repositório. Ao contrário de versões anteriores deste painel, o token do GitHub agora fica escrito no próprio `prr-dashboard.html` (ver aviso na secção "Persistência dos dados" acima) — é uma troca deliberada para não haver ecrã de ligação, mas significa que o token deve ser tratado como público a partir do momento em que a página é publicada.
+Os dados dos projetos ficam na base de dados Supabase, não neste repositório. A chave `SUPABASE_ANON_KEY` escrita em `prr-dashboard.html` é segura por design — mas, como não há autenticação de utilizadores, qualquer pessoa com o link da página pode editar ou apagar dados (ver aviso na secção "Persistência dos dados" acima). `projects.json` deixou de ser usado; pode ser removido do repositório quando quiseres.

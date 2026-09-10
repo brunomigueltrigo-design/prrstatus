@@ -76,12 +76,6 @@
     cursor: pointer; font-family: 'Overpass', sans-serif;
   }
   .chip.active{ background: var(--ink); color: #fff; border-color: var(--ink); }
-  .add-project-btn{
-    margin-left: auto; background: var(--ink); color: #fff; border: none; border-radius: 20px;
-    padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
-  }
-  .add-project-btn:hover{ opacity: .85; }
-
   /* Category groups */
   .category-group{ margin-bottom: 36px; }
   .category-title{
@@ -154,7 +148,6 @@
   .card-actions{ display:flex; gap: 12px; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--line); }
   .card-actions button{ background: none; border: none; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-decoration: underline; cursor: pointer; padding: 0; }
   .card-actions button:hover{ color: var(--ink); }
-  .card-actions button.del:hover{ color: var(--risco); }
 
   .empty-state{ grid-column: 1 / -1; text-align:center; padding: 60px 20px; color: var(--ink-soft); font-weight: 500; }
 
@@ -217,7 +210,6 @@
     <button class="chip" data-filter="em_execucao">Em execução</button>
     <button class="chip" data-filter="por_iniciar">Por iniciar</button>
     <button class="chip" data-filter="concluido">Concluído</button>
-    <button class="add-project-btn" id="addProjectBtn">+ Novo projeto</button>
   </div>
 
   <div id="groupsContainer"></div>
@@ -419,7 +411,7 @@
   const el = id => document.getElementById(id);
   const $ = {
     statusMsg: el('statusMsg'), updatedLabel: el('updatedLabel'),
-    addProjectBtn: el('addProjectBtn'), groupsContainer: el('groupsContainer'), filters: el('filters'),
+    groupsContainer: el('groupsContainer'), filters: el('filters'),
     exportPptxBtn: el('exportPptxBtn'),
     overlay: el('overlay'), modalTitle: el('modalTitle'),
     mNome: el('mNome'), mUnidade: el('mUnidade'), mFicha: el('mFicha'), mEstado: el('mEstado'),
@@ -444,24 +436,23 @@
   }
 
   function openModal(project){
-    state.editingId = project ? project.id : null;
-    $.modalTitle.textContent = project ? 'Editar projeto' : 'Novo projeto';
-    $.mNome.value = project?.nome || '';
-    $.mUnidade.value = project?.unidade || '';
-    $.mFicha.value = project?.ficha || '';
-    $.mEstado.value = project?.estado || 'em_execucao';
-    $.mGestor.value = project?.gestor || '';
-    $.mTaxaProjeto.value = project?.taxaProjeto ?? '';
-    $.mTaxaFinanceira.value = project?.taxaFinanceira ?? '';
-    $.mInvestimento.value = project?.investimentoTotal ?? '';
-    $.mDependencias.value = project?.dependencias || '';
-    $.mRiscos.value = project?.riscos || '';
-    $.mProximosPassos.value = project?.proximosPassos || '';
+    state.editingId = project.id;
+    $.modalTitle.textContent = 'Editar projeto';
+    $.mNome.value = project.nome || '';
+    $.mUnidade.value = project.unidade || '';
+    $.mFicha.value = project.ficha || '';
+    $.mEstado.value = project.estado || 'em_execucao';
+    $.mGestor.value = project.gestor || '';
+    $.mTaxaProjeto.value = project.taxaProjeto ?? '';
+    $.mTaxaFinanceira.value = project.taxaFinanceira ?? '';
+    $.mInvestimento.value = project.investimentoTotal ?? '';
+    $.mDependencias.value = project.dependencias || '';
+    $.mRiscos.value = project.riscos || '';
+    $.mProximosPassos.value = project.proximosPassos || '';
     $.overlay.classList.add('open');
   }
   function closeModal(){ $.overlay.classList.remove('open'); }
 
-  $.addProjectBtn.addEventListener('click', () => openModal(null));
   $.cancelModal.addEventListener('click', closeModal);
   $.overlay.addEventListener('click', (e) => { if(e.target === $.overlay) closeModal(); });
 
@@ -474,7 +465,7 @@
     const invest = $.mInvestimento.value === '' ? null : parseFloat($.mInvestimento.value);
 
     const record = {
-      id: state.editingId || Date.now().toString(36),
+      id: state.editingId,
       nome,
       unidade: $.mUnidade.value.trim(),
       ficha: $.mFicha.value.trim(),
@@ -490,21 +481,12 @@
     };
 
     const idx = state.projects.findIndex(p => p.id === record.id);
-    if(idx >= 0) state.projects[idx] = record; else state.projects.unshift(record);
+    state.projects[idx] = record;
 
     closeModal();
     render();
     await persist();
   });
-
-  async function deleteProject(id){
-    const idx = state.projects.findIndex(p => p.id === id);
-    if(idx === -1) return;
-    if(!confirm('Remover este projeto?')) return;
-    state.projects.splice(idx, 1);
-    render();
-    await persist();
-  }
 
   // --- Persistência via GitHub (ficheiro projects.json, com histórico de commits) ---
   // Repositório de destino fixo no código (não é configurável a partir do browser).
@@ -825,7 +807,6 @@
 
           <div class="card-actions">
             <button class="edit" data-id="${p.id}">editar</button>
-            <button class="del" data-id="${p.id}">remover</button>
           </div>
         </div>
       </div>
@@ -867,9 +848,6 @@
         const p = state.projects.find(x => x.id === btn.dataset.id);
         if(p) openModal(p);
       });
-    });
-    $.groupsContainer.querySelectorAll('.del').forEach(btn => {
-      btn.addEventListener('click', () => deleteProject(btn.dataset.id));
     });
   }
 

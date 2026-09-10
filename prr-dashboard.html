@@ -28,6 +28,7 @@
   }
 
   *{ box-sizing: border-box; }
+  button, input, select, textarea{ font-family: inherit; }
 
   body{
     margin:0;
@@ -75,12 +76,6 @@
     cursor: pointer; font-family: 'Overpass', sans-serif;
   }
   .chip.active{ background: var(--ink); color: #fff; border-color: var(--ink); }
-  .add-project-btn{
-    margin-left: auto; background: var(--ink); color: #fff; border: none; border-radius: 20px;
-    padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
-  }
-  .add-project-btn:hover{ opacity: .85; }
-
   /* Category groups */
   .category-group{ margin-bottom: 36px; }
   .category-title{
@@ -153,7 +148,6 @@
   .card-actions{ display:flex; gap: 12px; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--line); }
   .card-actions button{ background: none; border: none; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-decoration: underline; cursor: pointer; padding: 0; }
   .card-actions button:hover{ color: var(--ink); }
-  .card-actions button.del:hover{ color: var(--risco); }
 
   .empty-state{ grid-column: 1 / -1; text-align:center; padding: 60px 20px; color: var(--ink-soft); font-weight: 500; }
 
@@ -216,7 +210,6 @@
     <button class="chip" data-filter="em_execucao">Em execução</button>
     <button class="chip" data-filter="por_iniciar">Por iniciar</button>
     <button class="chip" data-filter="concluido">Concluído</button>
-    <button class="add-project-btn" id="addProjectBtn">+ Novo projeto</button>
   </div>
 
   <div id="groupsContainer"></div>
@@ -256,13 +249,9 @@
   <div class="modal">
     <h2>Ligar ao GitHub</h2>
     <p style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 16px;line-height:1.5;">
-      Os dados passam a ser guardados no ficheiro <code>projects.json</code> do repositório indicado, com histórico de commits. É necessário um <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">token de acesso (fine-grained)</a> com permissão "Contents: Read and write" restrita a esse repositório. O token fica guardado apenas neste browser (localStorage) — nunca é enviado para mais lado nenhum além do GitHub.
+      Repositório: <code id="ghTarget"></code>. Os dados passam a ser guardados nesse ficheiro, com histórico de commits. É necessário um <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">token de acesso (fine-grained)</a> com permissão "Contents: Read and write" restrita a esse repositório. O token fica guardado apenas neste browser (localStorage) — nunca é enviado para mais lado nenhum além do GitHub, e nunca fica gravado no código da página.
     </p>
     <div class="form-grid">
-      <div><label for="ghOwner">Utilizador/Organização</label><input id="ghOwner" placeholder="ex: brunomigueltrigo-design"></div>
-      <div><label for="ghRepo">Repositório</label><input id="ghRepo" placeholder="ex: prrstatus"></div>
-      <div><label for="ghPath">Ficheiro de dados</label><input id="ghPath" placeholder="projects.json" value="projects.json"></div>
-      <div><label for="ghBranch">Branch</label><input id="ghBranch" placeholder="main" value="main"></div>
       <div class="full"><label for="ghToken">Token de acesso</label><input id="ghToken" type="password" placeholder="github_pat_..."></div>
     </div>
     <div class="modal-actions">
@@ -422,7 +411,7 @@
   const el = id => document.getElementById(id);
   const $ = {
     statusMsg: el('statusMsg'), updatedLabel: el('updatedLabel'),
-    addProjectBtn: el('addProjectBtn'), groupsContainer: el('groupsContainer'), filters: el('filters'),
+    groupsContainer: el('groupsContainer'), filters: el('filters'),
     exportPptxBtn: el('exportPptxBtn'),
     overlay: el('overlay'), modalTitle: el('modalTitle'),
     mNome: el('mNome'), mUnidade: el('mUnidade'), mFicha: el('mFicha'), mEstado: el('mEstado'),
@@ -432,8 +421,8 @@
     saveProjectBtn: el('saveProjectBtn'), cancelModal: el('cancelModal'),
     sumExecucao: el('sumExecucao'), sumConcluidos: el('sumConcluidos'), sumAtraso: el('sumAtraso'),
     sumTaxaProjeto: el('sumTaxaProjeto'), sumInvestimento: el('sumInvestimento'), sumTaxaFin: el('sumTaxaFin'),
-    githubBtn: el('githubBtn'), githubOverlay: el('githubOverlay'),
-    ghOwner: el('ghOwner'), ghRepo: el('ghRepo'), ghPath: el('ghPath'), ghBranch: el('ghBranch'), ghToken: el('ghToken'),
+    githubBtn: el('githubBtn'), githubOverlay: el('githubOverlay'), ghTarget: el('ghTarget'),
+    ghToken: el('ghToken'),
     ghSaveBtn: el('ghSaveBtn'), ghDisconnectBtn: el('ghDisconnectBtn'), ghCancelBtn: el('ghCancelBtn'),
     importExcelBtn: el('importExcelBtn'), importExcelInput: el('importExcelInput'),
   };
@@ -447,24 +436,23 @@
   }
 
   function openModal(project){
-    state.editingId = project ? project.id : null;
-    $.modalTitle.textContent = project ? 'Editar projeto' : 'Novo projeto';
-    $.mNome.value = project?.nome || '';
-    $.mUnidade.value = project?.unidade || '';
-    $.mFicha.value = project?.ficha || '';
-    $.mEstado.value = project?.estado || 'em_execucao';
-    $.mGestor.value = project?.gestor || '';
-    $.mTaxaProjeto.value = project?.taxaProjeto ?? '';
-    $.mTaxaFinanceira.value = project?.taxaFinanceira ?? '';
-    $.mInvestimento.value = project?.investimentoTotal ?? '';
-    $.mDependencias.value = project?.dependencias || '';
-    $.mRiscos.value = project?.riscos || '';
-    $.mProximosPassos.value = project?.proximosPassos || '';
+    state.editingId = project.id;
+    $.modalTitle.textContent = 'Editar projeto';
+    $.mNome.value = project.nome || '';
+    $.mUnidade.value = project.unidade || '';
+    $.mFicha.value = project.ficha || '';
+    $.mEstado.value = project.estado || 'em_execucao';
+    $.mGestor.value = project.gestor || '';
+    $.mTaxaProjeto.value = project.taxaProjeto ?? '';
+    $.mTaxaFinanceira.value = project.taxaFinanceira ?? '';
+    $.mInvestimento.value = project.investimentoTotal ?? '';
+    $.mDependencias.value = project.dependencias || '';
+    $.mRiscos.value = project.riscos || '';
+    $.mProximosPassos.value = project.proximosPassos || '';
     $.overlay.classList.add('open');
   }
   function closeModal(){ $.overlay.classList.remove('open'); }
 
-  $.addProjectBtn.addEventListener('click', () => openModal(null));
   $.cancelModal.addEventListener('click', closeModal);
   $.overlay.addEventListener('click', (e) => { if(e.target === $.overlay) closeModal(); });
 
@@ -477,7 +465,7 @@
     const invest = $.mInvestimento.value === '' ? null : parseFloat($.mInvestimento.value);
 
     const record = {
-      id: state.editingId || Date.now().toString(36),
+      id: state.editingId,
       nome,
       unidade: $.mUnidade.value.trim(),
       ficha: $.mFicha.value.trim(),
@@ -493,43 +481,35 @@
     };
 
     const idx = state.projects.findIndex(p => p.id === record.id);
-    if(idx >= 0) state.projects[idx] = record; else state.projects.unshift(record);
+    state.projects[idx] = record;
 
     closeModal();
     render();
     await persist();
   });
 
-  async function deleteProject(id){
-    const idx = state.projects.findIndex(p => p.id === id);
-    if(idx === -1) return;
-    if(!confirm('Remover este projeto?')) return;
-    state.projects.splice(idx, 1);
-    render();
-    await persist();
-  }
-
   // --- Persistência via GitHub (ficheiro projects.json, com histórico de commits) ---
-  const GH_STORAGE_KEY = 'prrGithubConfig';
-  const github = { owner:'', repo:'', path:'projects.json', branch:'main', token:'', sha:null, connected:false };
+  // Repositório de destino fixo no código (não é configurável a partir do browser).
+  // O token de acesso NUNCA fica aqui nem em mais nenhum ficheiro do repositório — é
+  // uma credencial e fica só no localStorage de quem se ligar, no seu próprio browser.
+  const GITHUB_CONFIG = { owner: 'brunomigueltrigo-design', repo: 'prrstatus', path: 'projects.json', branch: 'main' };
+
+  const GH_TOKEN_KEY = 'prrGithubToken';
+  const github = { ...GITHUB_CONFIG, token:'', sha:null, connected:false };
 
   function loadGithubConfig(){
     try{
-      const raw = localStorage.getItem(GH_STORAGE_KEY);
-      if(!raw) return;
-      Object.assign(github, JSON.parse(raw), { connected: true, sha: null });
+      const token = localStorage.getItem(GH_TOKEN_KEY);
+      if(!token) return;
+      Object.assign(github, { token, connected: true, sha: null });
     } catch(e){ /* localStorage indisponível ou dados corrompidos */ }
   }
   function saveGithubConfig(){
-    try{
-      localStorage.setItem(GH_STORAGE_KEY, JSON.stringify({
-        owner: github.owner, repo: github.repo, path: github.path, branch: github.branch, token: github.token
-      }));
-    } catch(e){ /* localStorage indisponível (ex: modo privado) */ }
+    try{ localStorage.setItem(GH_TOKEN_KEY, github.token); } catch(e){ /* localStorage indisponível (ex: modo privado) */ }
   }
   function clearGithubConfig(){
-    try{ localStorage.removeItem(GH_STORAGE_KEY); } catch(e){}
-    Object.assign(github, { owner:'', repo:'', path:'projects.json', branch:'main', token:'', sha:null, connected:false });
+    try{ localStorage.removeItem(GH_TOKEN_KEY); } catch(e){}
+    Object.assign(github, { token:'', sha:null, connected:false });
   }
 
   function b64EncodeUnicode(str){
@@ -611,10 +591,7 @@
   }
 
   $.githubBtn.addEventListener('click', () => {
-    $.ghOwner.value = github.owner;
-    $.ghRepo.value = github.repo;
-    $.ghPath.value = github.path || 'projects.json';
-    $.ghBranch.value = github.branch || 'main';
+    $.ghTarget.textContent = `${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo} · ${GITHUB_CONFIG.path} (${GITHUB_CONFIG.branch})`;
     $.ghToken.value = github.token;
     $.ghDisconnectBtn.style.display = github.connected ? '' : 'none';
     $.githubOverlay.classList.add('open');
@@ -629,13 +606,9 @@
     setStatus('', 'Desligado do GitHub.');
   });
   $.ghSaveBtn.addEventListener('click', async () => {
-    const owner = $.ghOwner.value.trim();
-    const repo = $.ghRepo.value.trim();
-    const path = $.ghPath.value.trim() || 'projects.json';
-    const branch = $.ghBranch.value.trim() || 'main';
     const token = $.ghToken.value.trim();
-    if(!owner || !repo || !token){ setStatus('err', 'Preenche utilizador, repositório e token.'); return; }
-    Object.assign(github, { owner, repo, path, branch, token, connected: true, sha: null });
+    if(!token){ setStatus('err', 'Preenche o token de acesso.'); return; }
+    Object.assign(github, { token, connected: true, sha: null });
     saveGithubConfig();
     updateGithubBtn();
     $.githubOverlay.classList.remove('open');
@@ -834,7 +807,6 @@
 
           <div class="card-actions">
             <button class="edit" data-id="${p.id}">editar</button>
-            <button class="del" data-id="${p.id}">remover</button>
           </div>
         </div>
       </div>
@@ -876,9 +848,6 @@
         const p = state.projects.find(x => x.id === btn.dataset.id);
         if(p) openModal(p);
       });
-    });
-    $.groupsContainer.querySelectorAll('.del').forEach(btn => {
-      btn.addEventListener('click', () => deleteProject(btn.dataset.id));
     });
   }
 

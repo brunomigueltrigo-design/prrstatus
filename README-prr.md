@@ -6,22 +6,23 @@ Link público: `https://brunomigueltrigo-design.github.io/prrstatus/prr-dashboar
 
 ## Persistência dos dados
 
-Por omissão, os dados vêm embutidos no próprio `prr-dashboard.html` e qualquer edição feita na página só dura enquanto a página não é recarregada.
+O painel liga-se sozinho ao repositório e guarda os dados no ficheiro `projects.json`, usando a API do GitHub — sem qualquer backend ou base de dados externa, e **sem nenhum passo manual**: não há botão para ligar, o repositório de destino e o token de acesso estão ambos fixos no código (`GITHUB_CONFIG` e `GITHUB_TOKEN`, no `prr-dashboard.html`).
 
-Para persistir as alterações entre sessões, o painel pode ligar-se diretamente a este repositório e guardar os dados no ficheiro `projects.json`, usando a API do GitHub — sem qualquer backend ou base de dados externa.
+### ⚠️ Isto expõe o token a quem tiver o link da página
 
-O repositório de destino (`brunomigueltrigo-design/prrstatus`, ficheiro `projects.json`, branch `main`) está **fixo no código** do `prr-dashboard.html` (constante `GITHUB_CONFIG`) — não é algo que se preencha na página. A única coisa que se introduz no browser é o **token de acesso**, porque é uma credencial e nunca deve ficar escrita em código publicado:
+Como o GitHub Pages costuma ser publicamente acessível mesmo vindo de um repositório privado, **qualquer pessoa com o link da página consegue ver este token no código-fonte** (Ctrl+U / "Ver código-fonte da página") e usá-lo para escrever no repositório. Esta troca foi feita conscientemente, para não haver nenhum ecrã de ligação — mas implica cuidados:
 
-1. Cria um **token de acesso fine-grained**: [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) → "Generate new token" → restringe o "Repository access" a este repositório (`prrstatus`) → em "Permissions", dá **"Contents: Read and write"**.
-2. Abre o painel e clica em **"Ligar ao GitHub"** (canto superior direito).
-3. Cola o token e clica em "Ligar".
-4. O painel carrega os projetos atuais de `projects.json` e, a partir daí, cada edição de projeto (e cada importação de Excel) fica automaticamente gravada nesse ficheiro, **como um commit novo no repositório** — com histórico completo de alterações.
+- O token tem de ser um **fine-grained PAT restrito só a este repositório** (`prrstatus`), com a permissão mínima **"Contents: Read and write"** — nunca um token com acesso a outros repositórios ou à conta toda.
+- Considera dar-lhe uma **expiração curta** (ex: 90 dias) e voltar a gerar um novo quando expirar (basta substituir o valor de `GITHUB_TOKEN` no código).
+- Se o link da página alguma vez for partilhado com alguém que não deva poder editar os dados, **revoga o token imediatamente** em [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) — isso corta o acesso de escrita sem precisares de mudar mais nada.
 
-O token fica guardado apenas no `localStorage` do browser onde ligaste — nunca é enviado para mais lado nenhum além da API do GitHub, e nunca fica escrito no código da página. Cada pessoa que precise de editar (não só ver) o painel no seu próprio browser tem de repetir este passo com o seu próprio token.
+### Como configurar o token (uma vez)
 
-**Sem ligar o token, os projetos criados/editados na página ficam apenas em memória do browser** (no array `state.projects`, dentro da sessão atual) — perdem-se ao recarregar a página. Não há nenhum outro sítio a guardar dados por omissão.
+1. Cria um token fine-grained em [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) → "Generate new token" → "Repository access" restrito a `prrstatus` → em "Permissions", `Contents: Read and write`.
+2. No `prr-dashboard.html`, procura a linha `const GITHUB_TOKEN = 'COLOCAR_TOKEN_AQUI';` e substitui `'COLOCAR_TOKEN_AQUI'` pelo token gerado.
+3. Faz commit e push dessa alteração (ou pede para eu o fazer, colando-me o token diretamente).
 
-Sem ligação ao GitHub, o painel continua a funcionar normalmente em modo "só nesta sessão" — útil para testar ou para quem só precisa de consultar.
+Enquanto o `GITHUB_TOKEN` não estiver preenchido, o painel mostra um aviso no topo e as edições ficam só em memória do browser (perdem-se ao recarregar).
 
 ## Fluxo de trabalho: importar uma vez, depois só atualizar
 
@@ -30,7 +31,7 @@ O painel é **de atualização, não de criação**: não há botão para criar 
 1. **Carregar os dados** — botão **"Importar Excel"**, que lê um ficheiro no formato "Ponto de Situação Projeto PRR" (folha `PDS PRR`, com cabeçalhos como "Unidade", "N. Ficha Projecto", "Nome do Projetos", "Estado", "Taxa de execução projeto", "Investimento total", "Taxa de execução financeira", "Dependências", "Riscos", "Próximos Passos", "Gestor de Projeto") e substitui todos os projetos atuais pelos do ficheiro.
    - As taxas podem vir em fração (`0.7`) ou já em percentagem (`70`) — o painel deteta automaticamente.
    - O campo "Estado" aceita as variações do Excel de origem ("em atraso", "em execução", "por iniciar"/"por inciar", "concluído") e mapeia para os quatro estados do painel.
-   - Se estiver ligado ao GitHub, a importação é logo gravada como commit; caso contrário fica só na sessão.
+   - Se o `GITHUB_TOKEN` estiver configurado, a importação é logo gravada como commit; caso contrário fica só na sessão.
    - A operação pede confirmação antes de substituir os dados, porque é destrutiva — usa-se tipicamente uma vez, para semear ou repor a lista completa (ex: no início de um novo período de reporte).
 2. **Atualizar no dia a dia** — botão "editar" em cada cartão. Não é preciso voltar a importar Excel para mudar o estado, as taxas ou os riscos de um projeto existente.
 
@@ -43,4 +44,4 @@ O painel é **de atualização, não de criação**: não há botão para criar 
 
 ## Nota de segurança
 
-`projects.json` guarda tudo em texto simples neste repositório privado — nada fica em serviços externos. O único dado sensível introduzido pelo utilizador é o token do GitHub, que fica só no browser local (nunca em `projects.json` nem em nenhum commit).
+`projects.json` guarda tudo em texto simples neste repositório. Ao contrário de versões anteriores deste painel, o token do GitHub agora fica escrito no próprio `prr-dashboard.html` (ver aviso na secção "Persistência dos dados" acima) — é uma troca deliberada para não haver ecrã de ligação, mas significa que o token deve ser tratado como público a partir do momento em que a página é publicada.

@@ -2,7 +2,7 @@
 
 Painel de acompanhamento de projetos PRR: unidade, estado, taxa de execução do projeto, taxa de execução financeira, investimento, dependências, riscos e próximos passos. Página estática (`prr-dashboard.html`), sem build step, hospedada no GitHub Pages deste repositório (`prrstatus`).
 
-Link público: `https://brunomigueltrigo-design.github.io/prrstatus/prr-dashboard.html`
+Link público: `https://xanadudevs.github.io/prrstatus/prr-dashboard.html`
 
 ## Persistência dos dados
 

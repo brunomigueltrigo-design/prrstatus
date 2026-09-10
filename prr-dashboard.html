@@ -245,7 +245,7 @@
     <button class="chip" data-filter="em_execucao">Em execução</button>
     <button class="chip" data-filter="por_iniciar">Por iniciar</button>
     <button class="chip" data-filter="concluido">Concluído</button>
-    <button class="add-project-btn" id="addProjectBtn" disabled>+ Novo projeto</button>
+    <button class="add-project-btn" id="addProjectBtn">+ Novo projeto</button>
   </div>
 
   <div id="groupsContainer"></div>
@@ -283,9 +283,147 @@
 
 <script>
 (function(){
+  const DEFAULT_PROJECTS = [
+  {
+    "id": "data-lake",
+    "unidade": "UIA",
+    "ficha": "",
+    "nome": "Data Lake",
+    "estado": "em_execucao",
+    "taxaProjeto": 70,
+    "investimentoTotal": 10493575,
+    "taxaFinanceira": 40,
+    "dependencias": "Execução das fases V e VI (últimas fases)\nDesignação como OADS e Aprovação do Quadro Normativo.",
+    "riscos": "Cumprimento do prazo do contrato.",
+    "proximosPassos": "Simulação da Gestão dos Pedidos de Dados.",
+    "gestor": "Vanesssa Lima",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "id": "sico-2-0",
+    "unidade": "URN",
+    "ficha": "",
+    "nome": "SICO 2.0",
+    "estado": "em_execucao",
+    "taxaProjeto": 60,
+    "investimentoTotal": 197062.67,
+    "taxaFinanceira": 0,
+    "dependencias": "O CNM iniciou a 28 de agosto para um período de 4 meses. A aguardar o parecer da cibersegurança sobre a documentação da solução de autenticação do SICO, atualmente em análise pela equipa de segurança e IAM. Dependendo desse parecer, poderá ser necessário reavaliar eventuais ajustes à implementação (BFF).\nMantém-se ainda uma pendência externa com a equipa do IAM: a equipa do IAM irá partilhar a documentação para integração com a API (em desenvolvimento do lado deles, com previsão para 07/09), com a finalidade de consultar os dados dos utilizadores do lado do IAM e provisionar a atual base de utilizadores (garantindo a continuidade dos acessos).",
+    "riscos": "Cumprimento do prazo do contrato.",
+    "proximosPassos": "Mantêm-se em curso as atividades de migração de dados, mais especificamente a preparação dos testes, nomeadamente o desenvolvimento do script de anonimização dos dados, para permitir a realização de testes de migração o mais próximos possível da realidade de produção. Mantêm-se também em curso o desenvolvimento frontend da autópsia clínica adulta e da consulta da intervenção do Ministério Público.",
+    "gestor": "Giselly Vieira",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "id": "rentev-2-0",
+    "unidade": "URN",
+    "ficha": "",
+    "nome": "RENTEV 2.0",
+    "estado": "em_execucao",
+    "taxaProjeto": 70,
+    "investimentoTotal": 274560,
+    "taxaFinanceira": 40,
+    "dependencias": "Mantém-se ainda uma pendência externa com a equipa do IAM: a equipa do IAM irá partilhar a documentação para integração com a API (em desenvolvimento do lado deles, com previsão para 07/09), com a finalidade de consultar os dados dos utilizadores do lado do IAM e provisionar a atual base de utilizadores (garantindo a continuidade dos acessos).",
+    "riscos": "Cumprimento do prazo do contrato.",
+    "proximosPassos": "A empresa CNM prevê concluir esta semana o envio das documentações da fase II. Está também prevista o início do deploy em ambiente de QA, assim que forem corrigidos os bugs mais críticos identificados em ambiente de desenvolvimento.",
+    "gestor": "Giselly Vieira",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "id": "rennda-next-gen",
+    "unidade": "URN",
+    "ficha": "",
+    "nome": "RENNDA NEXT GEN",
+    "estado": "em_execucao",
+    "taxaProjeto": 80,
+    "investimentoTotal": 290033.22,
+    "taxaFinanceira": 30,
+    "dependencias": "Mantém-se ainda uma pendência externa com a equipa do IAM: a equipa do IAM irá partilhar a documentação para integração com a API (em desenvolvimento do lado deles, com previsão para 07/09), com a finalidade de consultar os dados dos utilizadores do lado do IAM e provisionar a atual base de utilizadores (garantindo a continuidade dos acessos).",
+    "riscos": "Cumprimento do prazo do contrato.",
+    "proximosPassos": "O projeto mantém-se em standby. Aguardando a reavaliação da retoma dos trabalhos, permanecendo pendentes correções críticas a efetuar pela empresa CNM.",
+    "gestor": "Giselly Vieira",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "id": "rnu",
+    "unidade": "URN",
+    "ficha": "",
+    "nome": "RNU",
+    "estado": "em_execucao",
+    "taxaProjeto": null,
+    "investimentoTotal": 483840,
+    "taxaFinanceira": 50,
+    "dependencias": "WS desenvolvidos por parte da Closer, com alguns pendentes de autenticação e bloqueados pelo ticket (S260902_000251). Do lado do RNU estamos a testar os srviços entregues, a par com outras inciativas de CP.\nA Closer apresentou plano para a próxima fase de desenvolvimento aplicacional, a iniciar esta semana.",
+    "riscos": "Cumprimento do prazo do contrato.",
+    "proximosPassos": "- Autenticação em falta nos WS\n- Contuniar testes aos WS entregues\n- Iniciar desenvolvimento aplicacional",
+    "gestor": "Giselly Vieira",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "id": "eco-sa-de",
+    "unidade": "URN",
+    "ficha": "",
+    "nome": "ECO@SAÚDE",
+    "estado": "em_execucao",
+    "taxaProjeto": 80,
+    "investimentoTotal": 242889.16,
+    "taxaFinanceira": 30,
+    "dependencias": "Integração com o IAM",
+    "riscos": "Cumprimento do prazo do contrato.",
+    "proximosPassos": "",
+    "gestor": "Giselly Vieira",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "id": "rnp",
+    "unidade": "URN",
+    "ficha": "",
+    "nome": "RNP",
+    "estado": "em_execucao",
+    "taxaProjeto": 80,
+    "investimentoTotal": 271382.98,
+    "taxaFinanceira": 30,
+    "dependencias": "",
+    "riscos": "Cumprimento do prazo do contrato.",
+    "proximosPassos": "",
+    "gestor": "Giselly Vieira",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "id": "simsns-licenciamento-microstrategy",
+    "unidade": "UIA",
+    "ficha": "",
+    "nome": "SIMSNS-licenciamento Microstrategy",
+    "estado": "em_execucao",
+    "taxaProjeto": 90,
+    "investimentoTotal": null,
+    "taxaFinanceira": null,
+    "dependencias": "Integração com o IAM em Produção",
+    "riscos": "Cumprimento do prazo do contrato.",
+    "proximosPassos": "",
+    "gestor": "Eng.º Pedro Martins, Eng.º Pedro Marques",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "id": "scubo",
+    "unidade": "",
+    "ficha": "",
+    "nome": "SCUBO",
+    "estado": "em_execucao",
+    "taxaProjeto": null,
+    "investimentoTotal": null,
+    "taxaFinanceira": null,
+    "dependencias": "",
+    "riscos": "",
+    "proximosPassos": "",
+    "gestor": "",
+    "updatedAt": "2026-09-08T00:00:00.000Z"
+  }
+];
+
   const state = {
     owner:'', repo:'', path:'projects.json', token:'',
-    connected:false, projects: [], sha:null, editingId: null, filter: 'todos'
+    connected:false, projects: DEFAULT_PROJECTS.slice(), sha:null, editingId: null, filter: 'todos'
   };
 
   const el = id => document.getElementById(id);
@@ -335,7 +473,9 @@
         headers: { 'Authorization': `Bearer ${state.token}`, 'Accept': 'application/vnd.github+json' }
       });
       if(res.status === 404){
-        state.projects = []; state.sha = null; state.connected = true;
+        // Ficheiro ainda não existe no repositório: mantém os dados atuais (já carregados)
+        // e cria o ficheiro na próxima gravação.
+        state.sha = null; state.connected = true;
       } else if(res.ok){
         const data = await res.json();
         state.sha = data.sha;
@@ -429,6 +569,12 @@
 
     closeModal();
     render();
+
+    if(!state.connected){
+      setStatus('', 'Guardado só nesta sessão — liga ao GitHub para tornar permanente.');
+      return;
+    }
+
     setStatus('', 'A gravar no GitHub...');
     try{
       await saveToGitHub(`${idx >= 0 ? 'Atualiza' : 'Adiciona'} projeto: ${nome}`);
@@ -446,6 +592,12 @@
     if(!confirm('Remover este projeto? Esta ação fica registada no histórico do repositório.')) return;
     const removed = state.projects.splice(idx, 1)[0];
     render();
+
+    if(!state.connected){
+      setStatus('', 'Removido só nesta sessão — liga ao GitHub para tornar permanente.');
+      return;
+    }
+
     try{
       await saveToGitHub(`Remove projeto: ${removed.nome}`);
     } catch(e){
@@ -543,6 +695,7 @@
   function render(){
     const list = state.projects.filter(p => state.filter === 'todos' || p.estado === state.filter);
     renderSummary(state.projects);
+    $.addProjectBtn.disabled = false;
 
     if(state.projects.length){
       const latest = state.projects.reduce((max, p) => (p.updatedAt || '') > max ? p.updatedAt : max, '');

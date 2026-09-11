@@ -195,6 +195,7 @@
     <div class="toolbar">
       <button id="importExcelBtn">Importar Excel</button>
       <input type="file" id="importExcelInput" accept=".xlsx,.xls" style="display:none">
+      <button id="exportExcelBtn">Exportar Excel</button>
       <button id="exportPptxBtn">Exportar PowerPoint</button>
     </div>
   </header>
@@ -412,6 +413,7 @@
     sumExecucao: el('sumExecucao'), sumConcluidos: el('sumConcluidos'), sumAtraso: el('sumAtraso'),
     sumTaxaProjeto: el('sumTaxaProjeto'), sumInvestimento: el('sumInvestimento'), sumTaxaFin: el('sumTaxaFin'),
     importExcelBtn: el('importExcelBtn'), importExcelInput: el('importExcelInput'),
+    exportExcelBtn: el('exportExcelBtn'),
   };
 
   const ESTADO_LABEL = { em_atraso:'Em atraso', em_execucao:'Em execução', por_iniciar:'Por iniciar', concluido:'Concluído' };
@@ -677,6 +679,32 @@
     } catch(err){
       setStatus('err', 'Erro ao importar Excel: ' + err.message);
     }
+  });
+
+  const EXCEL_EXPORT_HEADERS = [
+    'Unidade', 'N. Ficha Projecto', 'Nome do Projetos', 'Estado', 'Gestor de Projeto',
+    'Taxa de execução projeto', 'Investimento total', 'Taxa de execução financeira',
+    'Dependências', 'Riscos', 'Próximos Passos',
+  ];
+
+  $.exportExcelBtn.addEventListener('click', () => {
+    if(typeof XLSX === 'undefined'){
+      setStatus('err', 'A biblioteca de exportação não carregou. Verifica a ligação à internet e tenta de novo.');
+      return;
+    }
+    const rows = [EXCEL_EXPORT_HEADERS, ...state.projects.map(p => [
+      p.unidade || '', p.ficha || '', p.nome || '', ESTADO_LABEL[p.estado] || p.estado || '', p.gestor || '',
+      typeof p.taxaProjeto === 'number' ? p.taxaProjeto : '',
+      typeof p.investimentoTotal === 'number' ? p.investimentoTotal : '',
+      typeof p.taxaFinanceira === 'number' ? p.taxaFinanceira : '',
+      p.dependencias || '', p.riscos || '', p.proximosPassos || '',
+    ])];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'PDS PRR');
+    const stamp = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `PRR-projetos-${stamp}.xlsx`);
+    setStatus('', `${state.projects.length} projeto(s) exportado(s) para Excel.`);
   });
 
   $.filters.addEventListener('click', (e) => {

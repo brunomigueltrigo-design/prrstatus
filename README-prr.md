@@ -66,6 +66,7 @@ O painel é **de atualização, não de criação**: não há botão para criar 
    - O campo "Estado" aceita as variações do Excel de origem ("em atraso", "em execução", "por iniciar"/"por inciar", "concluído") e mapeia para os quatro estados do painel.
    - Se o Supabase estiver configurado, a importação é logo gravada na base de dados; caso contrário fica só na sessão.
    - A operação pede confirmação antes de substituir os dados, porque é destrutiva — usa-se tipicamente uma vez, para semear ou repor a lista completa (ex: no início de um novo período de reporte).
+   - Antes de reimportar (substituir tudo), é boa prática guardar primeiro uma cópia dos dados atuais com o botão **"Exportar Excel"** — gera um `.xlsx` no mesmo formato, que serve de backup e pode ser reimportado se algo correr mal.
 2. **Atualizar no dia a dia** — botão "editar" em cada cartão. Não é preciso voltar a importar Excel para mudar o estado, as taxas ou os riscos de um projeto existente.
 
 ## O que o painel mostra
